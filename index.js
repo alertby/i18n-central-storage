@@ -1,4 +1,4 @@
-import { findFilesInDirectory } from './files.parser';
+import findFilesInDirectory from './files.parser';
 
 
 export default class I18nCentralStorage {
@@ -11,13 +11,14 @@ export default class I18nCentralStorage {
     }
 
 
-    searchinDirectory () {
+    searchFilesInDirectoryByExtenstion (directories, extentions) {
         let allFiles = [];
 
-        this.directories.each((directory) => {
-            allFiles = findFilesInDirectory(directory, this.extentions);
+        directories.forEach((directory) => {
+            allFiles = findFilesInDirectory(directory, extentions);
         });
 
+        return allFiles;
     }
 }
 

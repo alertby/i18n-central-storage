@@ -3,7 +3,7 @@ import { existsSync, readdirSync, lstatSync } from 'fs';
 
 function matchedToAnyExtension(filename, filesExtentions) {
     let matched = false;
-    filesExtentions.each((extention) => {
+    filesExtentions.forEach((extention) => {
 
         if (filename.indexOf(extention)) { return; }
         matched = true;
