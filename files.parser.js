@@ -47,3 +47,9 @@ export function searchTextInFileByPattern(filePath, pattern) {
     });
     return texts;
 }
+
+export function getObjectFromFile(filePath) {
+    const content = readFileSync(filePath, 'utf8');
+
+    return JSON.parse(content);
+}
