@@ -1,5 +1,5 @@
 import { join } from 'path';
-import { existsSync, readdirSync, lstatSync } from 'fs';
+import { existsSync, readdirSync, lstatSync, readFileSync } from 'fs';
 
 function matchedToAnyExtension(filename, filesExtentions) {
     let matched = false;
@@ -12,7 +12,7 @@ function matchedToAnyExtension(filename, filesExtentions) {
 }
 
 
-export default function findFilesInDirectory(baseDirectoryPath, filesExtentions) {
+export function findFilesInDirectory(baseDirectoryPath, filesExtentions) {
 
     let files = [];
 
@@ -33,3 +33,17 @@ export default function findFilesInDirectory(baseDirectoryPath, filesExtentions)
     return files;
 }
 
+
+export function searchTextInFileByPattern(filePath, pattern) {
+    const contents = readFileSync(filePath, 'utf8');
+    const foundStrings = contents.match(pattern);
+
+    const texts = foundStrings.map((matchedText) => {
+
+        const regExp = new RegExp(pattern);
+        const text = regExp.exec(matchedText);
+
+        return text[1];
+    });
+    return texts;
+}

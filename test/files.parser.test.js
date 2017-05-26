@@ -31,4 +31,13 @@ describe('Module API', () => {
 
     });
 
+    it('searchTextInFileByPattern', () => {
+        const regexp = /gettext\('(.*?)'\)/gi;
+        const filePath = resolve(__dirname, 'fixtures/files/react.component.view.js');
+        const foundStrings = i18nCentralStorage.searchTextInFileByPattern(filePath, regexp);
+
+        foundStrings[0].should.equal('test label');
+        foundStrings[1].should.equal('Type here to find sevice');
+    });
+
 });

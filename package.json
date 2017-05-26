@@ -1,7 +1,7 @@
 {
   "name": "i18n-central-storage",
   "version": "1.0.0",
-  "description": "",
+  "description": "parse files to find words that should be translated by pattern and put them to elasticsearch storage ",
   "main": "index.js",
   "directories": {
     "test": "test"

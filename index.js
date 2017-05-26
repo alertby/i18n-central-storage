@@ -1,5 +1,4 @@
-import findFilesInDirectory from './files.parser';
-
+import {findFilesInDirectory, searchTextInFileByPattern} from './files.parser';
 
 export default class I18nCentralStorage {
     constructor(config) {
@@ -19,6 +18,12 @@ export default class I18nCentralStorage {
         });
 
         return allFiles;
+    }
+
+    searchTextInFileByPattern (filePath, pattern) {
+        const texts = searchTextInFileByPattern(filePath, pattern);
+
+        return texts;
     }
 }
 

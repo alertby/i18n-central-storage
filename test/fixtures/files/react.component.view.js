@@ -17,6 +17,7 @@ export default class SearchInputComponent extends Component {
     super(props);
 
     this.delaySearchSubmision = debounce(this.onChangeTextDelayed, DEBOUNCE_TIMEOUT);
+    this.label = gettext('test label');
 
     this.state = {
       query: '',
