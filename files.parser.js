@@ -2,35 +2,44 @@ import { join } from 'path';
 import { existsSync, readdirSync, lstatSync, readFileSync } from 'fs';
 
 function matchedToAnyExtension(filename, filesExtentions) {
-    let matched = false;
+    let isMatched = false;
     filesExtentions.forEach((extention) => {
 
-        if (filename.indexOf(extention)) { return; }
-        matched = true;
+        if (filename.search(extention) >= (filename.length - extention.length)) {
+            isMatched = true;
+        }
+
     });
-    return matched;
+    return isMatched;
 }
 
 
 export function findFilesInDirectory(baseDirectoryPath, filesExtentions) {
 
     let files = [];
+    let filesNames = [];
 
     if (!existsSync(baseDirectoryPath)) {
         return files;
     }
 
     files = readdirSync(baseDirectoryPath);
-    for (let i = 0; i < files.length; i++) {
-        const filename = join(baseDirectoryPath, files[i]);
+
+    files.forEach((file) => {
+        const filename = join(baseDirectoryPath, file);
         const stat = lstatSync(filename);
+
+
         if (stat.isDirectory()) {
-            files = files.concat(findFilesInDirectory(filename, filesExtentions));
+
+            filesNames = filesNames.concat(findFilesInDirectory(filename, filesExtentions));
         } else if (matchedToAnyExtension(filename, filesExtentions)) {
-            files.push(filename);
+
+            filesNames.push(filename);
         }
-    }
-    return files;
+    }, this);
+
+    return filesNames;
 }
 
 

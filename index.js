@@ -1,29 +1,43 @@
-import {findFilesInDirectory, searchTextInFileByPattern} from './files.parser';
+import {findFilesInDirectory, searchTextInFileByPattern, getObjectFromFile} from './files.parser';
+import {getNewMessages} from './messages';
+import { resolve } from 'path';
+import createDebug from 'debug';
+
+const debug = createDebug('i18-central-storage');
 
 export default class I18nCentralStorage {
     constructor(config) {
         this.config = config;
 
-        this.directories = config.directories || [];
+        this.directories = config.directories;
+        this.messagesDirectory = config.messagesDirectory;
         this.extentions = config.extentions || [];
         this.pattern = config.pattern;
     }
 
+    analize (locale) {
+        const messagesFile = resolve(this.messagesDirectory, locale + '.js');
+        const previousMessages = getObjectFromFile(messagesFile);
+        let filesList = [];
+        let foundMessages = [];
 
-    searchFilesInDirectoryByExtenstion (directories, extentions) {
-        let allFiles = [];
+        this.directories.forEach((directory) => {
+            const foundFiles = findFilesInDirectory(directory, this.extentions);
+            filesList = filesList.concat(foundFiles);
+        }, this);
 
-        directories.forEach((directory) => {
-            allFiles = findFilesInDirectory(directory, extentions);
-        });
+        debug('filesList', filesList);
 
-        return allFiles;
-    }
+        filesList.forEach((filePath) => {
+            const messages = searchTextInFileByPattern(filePath, this.pattern);
+            foundMessages = foundMessages.concat(messages);
+        }, this);
 
-    searchTextInFileByPattern (filePath, pattern) {
-        const texts = searchTextInFileByPattern(filePath, pattern);
+        const newMessages = getNewMessages(previousMessages, foundMessages);
 
-        return texts;
+        debug('newMessages', newMessages);
+
+        return newMessages;
     }
 }
 
