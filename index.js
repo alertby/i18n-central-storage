@@ -39,5 +39,8 @@ export default class I18nCentralStorage {
 
         return newMessages;
     }
+
+    fetchFromCentralStorage (messages, locale) {
+    }
 }
 

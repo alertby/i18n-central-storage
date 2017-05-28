@@ -25,5 +25,8 @@
     "debug": "^2.6.8",
     "mocha": "*",
     "should": "*"
+  },
+  "dependencies": {
+    "elasticsearch": "*"
   }
 }
