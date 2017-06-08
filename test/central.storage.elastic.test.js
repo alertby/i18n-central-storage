@@ -25,7 +25,6 @@ describe('ElasticCentralStorage', () => {
     };
 
     beforeEach((done) => {
-
         elasticCentralStorage = new ElasticCentralStorage(config);
 
         elasticCentralStorage.client.indices.create({
@@ -44,44 +43,34 @@ describe('ElasticCentralStorage', () => {
     });
 
     afterEach((done) => {
-        // elasticCentralStorage.client.indices.delete({
-        //     index: config.index
-        // }, (error) => {
-        //     if (error) {
-        //         throw Error(error);
-        //     }
-        //     done();
+        elasticCentralStorage.client.indices.delete({
+            index: config.index
+        }, (error) => {
+            if (error) {
+                throw Error(error);
+            }
+            done();
 
-        // });
-        done();
+        });
+
     });
 
-    it('add', (done) => {
+    it('addMessage', (done) => {
         const locale = 'ru';
         const message = 'test message 1';
-        const secret = config.index;
-        const hash = crypto.createHmac('sha256', secret)
-                   .update(message)
-                   .digest('hex');
 
-        elasticCentralStorage.client.create({
-            index: config.index,
-            type: locale,
-            id: hash,
-            body: {
-                message,
-                translatedAt: null,
-                publishedAt: moment().format('YYYY-MM-DDTHH:mm:ss')
-            }
-        }).
-        then((error, response) => {
-            should.not.exist(error);
-            done();
-        });
+        elasticCentralStorage
+            .addMessage(message, locale)
+            .then((result) => {
+
+                console.log('addMessage ', result);
+                should(result.created).is.exactly(true);
+                done();
+            });
     });
 
 
-    it('fetch', (done) => {
+    it('fetchMessages', (done) => {
 
         const messages = [
             'test message 1',
@@ -96,8 +85,11 @@ describe('ElasticCentralStorage', () => {
             should.not.exist(error);
 
             elasticCentralStorage
-                .fetch(messages, locale)
-                .then(() => { done(); });
+                .fetchMessages(messages, locale)
+                .then((result) => {
+                    console.log(' fetchMessages  result', result);
+                    done();
+                });
         });
 
     });
