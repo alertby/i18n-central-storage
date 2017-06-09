@@ -1,4 +1,4 @@
-/* global __dirname, describe, it, beforeEach, afterEach */
+/* global __dirname, describe, it, before, after */
 import ElasticCentralStorage from '../central.storage.elastic';
 import moment from 'moment';
 import crypto from 'crypto';
@@ -24,7 +24,7 @@ describe('ElasticCentralStorage', () => {
         }
     };
 
-    beforeEach((done) => {
+    before((done) => {
         elasticCentralStorage = new ElasticCentralStorage(config);
 
         elasticCentralStorage.client.indices.create({
@@ -42,7 +42,7 @@ describe('ElasticCentralStorage', () => {
 
     });
 
-    afterEach((done) => {
+    after((done) => {
         elasticCentralStorage.client.indices.delete({
             index: config.index
         }, (error) => {
@@ -63,7 +63,6 @@ describe('ElasticCentralStorage', () => {
             .addMessage(message, locale)
             .then((result) => {
 
-                console.log('addMessage ', result);
                 should(result.created).is.exactly(true);
                 done();
             });
@@ -87,7 +86,8 @@ describe('ElasticCentralStorage', () => {
             elasticCentralStorage
                 .fetchMessages(messages, locale)
                 .then((result) => {
-                    console.log(' fetchMessages  result', result);
+                    // console.log(' fetchMessages  result', result);
+                    should(result.docs[0].found).is.exactly(true);
                     done();
                 });
         });

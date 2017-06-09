@@ -2,6 +2,19 @@ import es from 'elasticsearch';
 import crypto from 'crypto';
 import moment from 'moment';
 
+
+const mappings = {
+    'messages': {
+        '_all': {'enabled': false },
+        'properties': {
+            'message': {'type': 'text'},
+            'translattion': {'type': 'text'},
+            'translatedAt': {'type': 'date'},
+            'publishedAt': {'type': 'date'}
+        }
+    }
+};
+
 export default class ElasticCentralStorage {
     constructor(config) {
 
@@ -13,12 +26,36 @@ export default class ElasticCentralStorage {
             throw Error('ElasticCentralStorage index should be specified');
         }
 
+        this.config.mappings = config.mappings || mappings;
+
         this.config = config;
 
         this.client = new es.Client({
           host: config.host
           // log: 'trace'
         });
+
+        this.createIndexForCentralStorage();
+    }
+
+    createIndexForCentralStorage () {
+        this.client.exists({
+          index: this.config.index
+        }, (error, exists) => {
+            if (exists) { return; }
+
+            this.client.indices.create({
+                index: this.config.index,
+                body: {
+                    mappings: this.config.mappings
+                }
+            }, (error) => {
+                if (error) {
+                    throw Error(error);
+                }
+            });
+        });
+
     }
 
     getHashesOfMessage (message) {
@@ -33,9 +70,9 @@ export default class ElasticCentralStorage {
         const hash = this.getHashesOfMessage(message);
 
         const doc = {
-            index: this.config.index,
-            type: locale,
-            id: hash
+            _index: this.config.index,
+            _type: locale,
+            _id: hash
         };
         return doc;
     }
@@ -66,7 +103,6 @@ export default class ElasticCentralStorage {
                     publishedAt: moment().format('YYYY-MM-DDTHH:mm:ss')
                 }
             }, (error, response) => {
-
                 if (error) {
                     reject(error);
                 }
@@ -87,6 +123,7 @@ export default class ElasticCentralStorage {
                     docs
                 }
             }, (error, response) => {
+                console.log(' mget ', error);
                 if (error) {
                     reject(error);
                 }

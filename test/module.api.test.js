@@ -24,7 +24,18 @@ describe('Module API', () => {
     });
 
     it('analize en locale', () => {
-        const newMessages = i18nCentralStorage.analize('en');
+        const { newMessages } = i18nCentralStorage.analize('en');
+        should(newMessages[0]).equal('test label');
+    });
+
+    it('analize ru locale', () => {
+        const { newMessages } = i18nCentralStorage.analize('ru');
+        should(newMessages[0]).equal('test label');
+    });
+
+
+    it('addNewMessagesToCentralStorage ru', () => {
+        const { newMessages } = i18nCentralStorage.analize('ru');
         should(newMessages[0]).equal('test label');
     });
 });

@@ -37,10 +37,18 @@ export default class I18nCentralStorage {
 
         debug('newMessages', newMessages);
 
-        return newMessages;
+        return {
+            foundMessages,
+            previousMessages,
+            newMessages
+        };
     }
 
     fetchFromCentralStorage (messages, locale) {
+    }
+
+    addNewMessagesToCentralStorage (messages, locale) {
+        fetchFromCentralStorage
     }
 }
 
