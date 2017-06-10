@@ -17,6 +17,7 @@ const mappings = {
 
 export default class ElasticCentralStorage {
     constructor(config) {
+        this.config = {};
 
         if (!config.host) {
             throw Error('ElasticCentralStorage host should be specified');
@@ -35,26 +36,35 @@ export default class ElasticCentralStorage {
           // log: 'trace'
         });
 
-        this.createIndexForCentralStorage();
     }
 
     createIndexForCentralStorage () {
-        this.client.exists({
-          index: this.config.index
-        }, (error, exists) => {
-            if (exists) { return; }
+        const promise = new Promise((resolve, reject) => {
 
-            this.client.indices.create({
-                index: this.config.index,
-                body: {
-                    mappings: this.config.mappings
+            this.client.indices.get({
+              index: this.config.index
+            }, (error, exists) => {
+
+                if (exists.status !== 404) {
+                    return resolve(exists);
                 }
-            }, (error) => {
-                if (error) {
-                    throw Error(error);
-                }
+
+                return this.client.indices.create({
+                    index: this.config.index,
+                    body: {
+                        mappings: this.config.mappings
+                    }
+                }, (error, response) => {
+                    if (error) {
+                        return reject(error);
+                    }
+                    return resolve(response);
+                });
+
             });
         });
+
+        return promise;
 
     }
 
@@ -92,7 +102,7 @@ export default class ElasticCentralStorage {
         const promise = new Promise((resolve, reject) => {
             const hash = this.getHashesOfMessage(message);
 
-            this.client.create({
+            return this.client.create({
                 index: this.config.index,
                 type: locale,
                 id: hash,
@@ -104,9 +114,9 @@ export default class ElasticCentralStorage {
                 }
             }, (error, response) => {
                 if (error) {
-                    reject(error);
+                    return reject(error);
                 }
-                resolve(response);
+                return resolve(response);
             });
         });
 
@@ -123,7 +133,7 @@ export default class ElasticCentralStorage {
                     docs
                 }
             }, (error, response) => {
-                console.log(' mget ', error);
+
                 if (error) {
                     reject(error);
                 }
