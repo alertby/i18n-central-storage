@@ -1,4 +1,5 @@
 import {findFilesInDirectory, searchTextInFileByPattern, getObjectFromFile} from './files.parser';
+import ElasticCentralStorage from './central.storage.elastic';
 import {getNewMessages} from './messages';
 import { resolve } from 'path';
 import createDebug from 'debug';
@@ -6,13 +7,17 @@ import createDebug from 'debug';
 const debug = createDebug('i18-central-storage');
 
 export default class I18nCentralStorage {
-    constructor(config) {
+    constructor(config, cb) {
         this.config = config;
 
         this.directories = config.directories;
         this.messagesDirectory = config.messagesDirectory;
         this.extentions = config.extentions || [];
         this.pattern = config.pattern;
+
+        this.elasticCentralStorage = new ElasticCentralStorage(config.elasticConfig);
+        this.elasticCentralStorage.createIndexForCentralStorage()
+            .then(() => { cb(); });
     }
 
     analize (locale) {

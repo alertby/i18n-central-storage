@@ -68,6 +68,22 @@ export default class ElasticCentralStorage {
 
     }
 
+    deleteIndexForCentralStorage() {
+        const promise = new Promise((resolve, reject) => {
+            this.client.indices.delete({
+                index: this.config.index
+            }, (error) => {
+
+               if (error) {
+                    return reject(error);
+                }
+                return resolve();
+            });
+        });
+
+        return promise;
+    }
+
     getHashesOfMessage (message) {
         const hash = crypto.createHmac('sha256', this.config.index)
             .update(message)

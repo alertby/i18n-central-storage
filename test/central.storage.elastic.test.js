@@ -23,15 +23,9 @@ describe('ElasticCentralStorage', () => {
     });
 
     after((done) => {
-        elasticCentralStorage.client.indices.delete({
-            index: config.index
-        }, (error) => {
-            if (error) {
-                throw Error(error);
-            }
-            done();
 
-        });
+        elasticCentralStorage.deleteIndexForCentralStorage()
+            .then(() => { done(); });
 
     });
 

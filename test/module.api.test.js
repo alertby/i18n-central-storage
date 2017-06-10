@@ -1,4 +1,4 @@
-/* global __dirname, describe, it, beforeEach */
+/* global __dirname, describe, it, beforeEach, afterEach */
 import I18nCentralStorage from '../index';
 import should from 'should';
 import { resolve } from 'path';
@@ -8,19 +8,30 @@ describe('Module API', () => {
 
     let i18nCentralStorage = null;
 
-    beforeEach(() => {
+    beforeEach((done) => {
 
         const directories = [resolve(__dirname, 'fixtures/files')];
         const messagesDirectory = resolve(__dirname, 'fixtures/messages/');
         const extentions = ['.js', '.ejs'];
         const pattern = /gettext\('(.*?)'\)/gi;
 
+        const elasticConfig = {
+            host: '192.168.1.237:9200',
+            index: 'i18n-central-storage-test'
+        };
+
         i18nCentralStorage = new I18nCentralStorage({
             directories,
             messagesDirectory,
             extentions,
-            pattern
-        });
+            pattern,
+            elasticConfig
+        }, done);
+    });
+
+    afterEach((done) => {
+        i18nCentralStorage.elasticCentralStorage.deleteIndexForCentralStorage()
+            .then(() => { done(); });
     });
 
     it('analize en locale', () => {
