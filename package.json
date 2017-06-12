@@ -27,6 +27,7 @@
     "should": "*"
   },
   "dependencies": {
+    "async": "^2.4.1",
     "elasticsearch": "*",
     "moment": "^2.18.1"
   }

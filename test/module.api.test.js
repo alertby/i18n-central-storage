@@ -45,8 +45,17 @@ describe('Module API', () => {
     });
 
 
-    it('addNewMessagesToCentralStorage ru', () => {
-        const { newMessages } = i18nCentralStorage.analize('ru');
+    it('addNewMessagesToCentralStorage ru', (done) => {
+        const locale = 'ru';
+        const { newMessages } = i18nCentralStorage.analize(locale);
         should(newMessages[0]).equal('test label');
+
+        i18nCentralStorage
+            .addNewMessagesToCentralStorage(newMessages, locale)
+            .then((result) => {
+
+                should(result.length).equal(newMessages.length);
+                done();
+            });
     });
 });

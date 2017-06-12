@@ -1,8 +1,9 @@
 import {findFilesInDirectory, searchTextInFileByPattern, getObjectFromFile} from './files.parser';
 import ElasticCentralStorage from './central.storage.elastic';
 import {getNewMessages} from './messages';
-import { resolve } from 'path';
+import path from 'path';
 import createDebug from 'debug';
+import async from 'async';
 
 const debug = createDebug('i18-central-storage');
 
@@ -21,7 +22,7 @@ export default class I18nCentralStorage {
     }
 
     analize (locale) {
-        const messagesFile = resolve(this.messagesDirectory, locale + '.js');
+        const messagesFile = path.resolve(this.messagesDirectory, locale + '.js');
         const previousMessages = getObjectFromFile(messagesFile);
         let filesList = [];
         let foundMessages = [];
@@ -53,7 +54,26 @@ export default class I18nCentralStorage {
     }
 
     addNewMessagesToCentralStorage (messages, locale) {
-        fetchFromCentralStorage
+
+        const add = (message, callback) => {
+            debug('add ', message);
+            this.elasticCentralStorage.addMessage(message, locale)
+                .then((response) => { callback(null, response); })
+                .catch((err) => { callback(err); });
+        };
+
+        const promise = new Promise((resolve, reject) => {
+            async.map(messages, add, (error, result) => {
+                debug('  addNewMessagesToCentralStorage result ', error, result);
+                if (error) {
+                    return reject(error);
+                }
+                return resolve(result);
+            });
+
+        });
+
+        return promise;
     }
 }
 
