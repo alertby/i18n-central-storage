@@ -8,7 +8,7 @@ const mappings = {
         '_all': {'enabled': false },
         'properties': {
             'message': {'type': 'text'},
-            'translattion': {'type': 'text'},
+            'translation': {'type': 'text'},
             'translatedAt': {'type': 'date'},
             'publishedAt': {'type': 'date'}
         }
@@ -129,6 +129,35 @@ export default class ElasticCentralStorage {
                     publishedAt: moment().format('YYYY-MM-DDTHH:mm:ss')
                 }
             }, (error, response) => {
+                if (error) {
+                    return reject(error);
+                }
+                return resolve(response);
+            });
+        });
+
+        return promise;
+    }
+
+
+    addMessageTranslation (message, translatedMessage, locale) {
+
+        const promise = new Promise((resolve, reject) => {
+            const hash = this.getHashesOfMessage(message);
+
+            return this.client.update({
+                index: this.config.index,
+                type: locale,
+                id: hash,
+                refresh: true,
+                body: {
+                    doc: {
+                        translation: translatedMessage,
+                        translatedAt: moment().format('YYYY-MM-DDTHH:mm:ss')
+                    }
+                }
+            }, (error, response) => {
+
                 if (error) {
                     return reject(error);
                 }

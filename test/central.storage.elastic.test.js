@@ -1,7 +1,5 @@
 /* global describe, it, before, after */
 import ElasticCentralStorage from '../central.storage.elastic';
-// import moment from 'moment';
-// import crypto from 'crypto';
 import should from 'should';
 
 

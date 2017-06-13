@@ -1,7 +1,8 @@
 /* global __dirname, describe, it, beforeEach, afterEach */
 import I18nCentralStorage from '../index';
 import should from 'should';
-import { resolve } from 'path';
+import path from 'path';
+import async from 'async';
 
 
 describe('Module API', () => {
@@ -10,8 +11,8 @@ describe('Module API', () => {
 
     beforeEach((done) => {
 
-        const directories = [resolve(__dirname, 'fixtures/files')];
-        const messagesDirectory = resolve(__dirname, 'fixtures/messages/');
+        const directories = [path.resolve(__dirname, 'fixtures/files')];
+        const messagesDirectory = path.resolve(__dirname, 'fixtures/messages/');
         const extentions = ['.js', '.ejs'];
         const pattern = /gettext\('(.*?)'\)/gi;
 
@@ -58,4 +59,57 @@ describe('Module API', () => {
                 done();
             });
     });
+
+    it('fetchTranslationsFromCentralStorage ru', (done) => {
+        const locale = 'ru';
+        const messages = [
+            {'test messagae 1': 'тестовое сообщение 1'},
+            {'another one %s with template': 'другое %s с шаблоном'}
+        ];
+
+        const messagesKeys = messages.map((message) => {
+            const key = Object.keys(message);
+            return key[0];
+        });
+
+        const addTranslation = (message, callback) => {
+
+            i18nCentralStorage
+                .elasticCentralStorage
+                .addMessageTranslation(Object.keys(message)[0], Object.values(message)[0], locale)
+                .then((response) => { callback(null, response); })
+                .catch((err) => { callback(err); });
+        };
+
+
+        i18nCentralStorage
+            .addNewMessagesToCentralStorage(messagesKeys, locale)
+            .then((result) => {
+
+                should(result.length).equal(messages.length);
+
+                async.map(messages, addTranslation, (error) => {
+
+                    should(error).null();
+
+                    i18nCentralStorage
+                        .fetchTranslationsFromCentralStorage(messagesKeys, locale)
+                        .then((response) => {
+
+                            const messagesArray = response.docs.map((message) => {
+
+                                const source = message._source;
+                                return { [source.message]: source.translation};
+                            });
+
+                            should(messages).deepEqual(messagesArray);
+                            done();
+                        });
+                });
+
+            });
+
+    });
+
+
 });

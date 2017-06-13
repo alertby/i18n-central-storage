@@ -1,6 +1,6 @@
 import {findFilesInDirectory, searchTextInFileByPattern, getObjectFromFile} from './files.parser';
 import ElasticCentralStorage from './central.storage.elastic';
-import {getNewMessages} from './messages';
+import {getNewMessages, getUnusedMessages} from './messages';
 import path from 'path';
 import createDebug from 'debug';
 import async from 'async';
@@ -40,17 +40,31 @@ export default class I18nCentralStorage {
         }, this);
 
         const newMessages = getNewMessages(previousMessages, foundMessages);
-
-        debug('newMessages', newMessages);
+        const unusedMessages = getUnusedMessages(previousMessages, foundMessages);
 
         return {
             foundMessages,
-            previousMessages,
+            unusedMessages,
             newMessages
         };
     }
 
-    fetchFromCentralStorage (messages, locale) {
+    fetchTranslationsFromCentralStorage (messages, locale) {
+
+        const promise = new Promise((resolve, reject) => {
+
+            this.elasticCentralStorage.fetchMessages(messages, locale)
+                .then((response) => {
+
+                    debug('  fetchTranslationsFromCentralStorage result ', response);
+                    resolve(response);
+                })
+                .catch((err) => {
+                    reject(err);
+                });
+        });
+
+        return promise;
     }
 
     addNewMessagesToCentralStorage (messages, locale) {
