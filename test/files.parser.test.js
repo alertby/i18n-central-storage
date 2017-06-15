@@ -1,5 +1,5 @@
 /* global __dirname, describe, it */
-import {findFilesInDirectory, searchTextInFileByPattern, getObjectFromFile} from './../files.parser';
+import {findFilesInDirectory, searchTextInFileByPattern, getObjectFromFile} from './../src/files.parser';
 import { resolve } from 'path';
 import should from 'should';
 

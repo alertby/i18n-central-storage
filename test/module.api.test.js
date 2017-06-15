@@ -1,5 +1,5 @@
 /* global __dirname, describe, it, beforeEach, afterEach */
-import I18nCentralStorage from '../index';
+import I18nCentralStorage from '../src/index';
 import should from 'should';
 import path from 'path';
 import async from 'async';

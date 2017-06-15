@@ -1,5 +1,5 @@
 /* global describe, it, before, after */
-import ElasticCentralStorage from '../central.storage.elastic';
+import ElasticCentralStorage from '../src/central.storage.elastic';
 import should from 'should';
 
 

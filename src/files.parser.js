@@ -47,6 +47,8 @@ export function searchTextInFileByPattern(filePath, pattern) {
     const contents = readFileSync(filePath, 'utf8');
     const foundStrings = contents.match(pattern);
 
+    if (!foundStrings) { return []; }
+
     const texts = foundStrings.map((matchedText) => {
 
         const regExp = new RegExp(pattern);
