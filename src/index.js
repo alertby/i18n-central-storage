@@ -1,4 +1,4 @@
-import {findFilesInDirectory, searchTextInFileByPattern, getObjectFromFile} from './files.parser';
+import {findFilesInDirectory, searchTextInFileByPattern, getObjectFromFile, setObjectToFile} from './files.parser';
 import ElasticCentralStorage from './central.storage.elastic';
 import {getNewMessages, getUnusedMessages} from './messages';
 import path from 'path';
@@ -47,6 +47,79 @@ export default class I18nCentralStorage {
             unusedMessages,
             newMessages
         };
+    }
+
+    syncLocale (analizedMessages, locale, options) {
+        const {
+            foundMessages,
+            unusedMessages,
+            newMessages
+        } = analizedMessages;
+        const { writeResultToFile } = options;
+
+
+        const promise = new Promise((resolve, reject) => {
+            this.fetchTranslationsFromCentralStorage(foundMessages, locale)
+                .then((response) => {
+
+                    let noneExistingMessagesInStore = response.docs.map((message, index) => {
+
+                        if (!message.found) {
+                            return foundMessages[index];
+                        }
+
+                        const source = message._source;
+                        if (newMessages.indexOf(source.message) >= 0) {
+                            return null;
+                        }
+
+                        return source.message;
+                    });
+
+                    noneExistingMessagesInStore = noneExistingMessagesInStore.filter((m) => m);
+
+
+                    let translatedMessages = response.docs.map((message) => {
+
+                        if (!message.found) {
+                            return null;
+                        }
+
+                        const source = message._source;
+                        return { [source.message]: source.translation};
+                    });
+
+                    translatedMessages = translatedMessages.filter((m) => m);
+
+                    debug('noneExistingMessagesInStore', noneExistingMessagesInStore);
+
+                    this.addNewMessagesToCentralStorage(noneExistingMessagesInStore, locale)
+                        .then(() => {
+                            const messagesFile = path.resolve(this.messagesDirectory, locale + '.js');
+                            const rusultingMessages = {};
+
+                            foundMessages.forEach((key) => {
+                                rusultingMessages[key] = translatedMessages[key] || key;
+                            });
+
+                            debug(' rusultingMessages ', rusultingMessages);
+                            if (writeResultToFile) {
+                                setObjectToFile(messagesFile, JSON.stringify(rusultingMessages));
+                            }
+                            resolve(rusultingMessages);
+
+                        })
+                        .catch((error) => {
+                            reject(error);
+                        });
+                })
+                .catch((error) => {
+                    reject(error);
+                });
+        });
+
+        return promise;
+
     }
 
     fetchTranslationsFromCentralStorage (messages, locale) {

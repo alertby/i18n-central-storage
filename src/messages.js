@@ -13,15 +13,16 @@ export function getNewMessages(storedMessages, foundMessages) {
 
 
 export function getUnusedMessages(storedMessages, foundMessages) {
-    const unusedMessages = [];
 
     if (!storedMessages) { return []; }
 
-    Object.keys(storedMessages).forEach((message) => {
-        if (foundMessages[message]) { return; }
+    let unusedMessages = Object.keys(storedMessages).map((message) => {
+        if (foundMessages.indexOf(message) >= 0) { return null; }
 
-        unusedMessages.push(message);
+        return message;
     });
+
+    unusedMessages = unusedMessages.filter((m) => m);
 
     return unusedMessages;
 }

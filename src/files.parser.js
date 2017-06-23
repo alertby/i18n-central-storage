@@ -1,5 +1,5 @@
 import { join } from 'path';
-import { existsSync, readdirSync, lstatSync, readFileSync } from 'fs';
+import { existsSync, readdirSync, lstatSync, readFileSync, writeFileSync} from 'fs';
 
 function matchedToAnyExtension(filename, filesExtentions) {
     let isMatched = false;
@@ -64,3 +64,10 @@ export function getObjectFromFile(filePath) {
 
     return JSON.parse(content);
 }
+
+
+export function setObjectToFile(filePath, data) {
+    writeFileSync(filePath, data, 'utf8');
+}
+
+

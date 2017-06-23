@@ -130,7 +130,8 @@ export default class ElasticCentralStorage {
                 }
             }, (error, response) => {
                 if (error) {
-                    return reject(error);
+
+                    return reject(error.message);
                 }
                 return resolve(response);
             });

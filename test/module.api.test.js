@@ -60,6 +60,47 @@ describe('Module API', () => {
             });
     });
 
+    it('addNewMessagesToCentralStorage already existing', (done) => {
+        const locale = 'ru';
+        const newMessages = ['existing message 1', 'existing message 2'];
+
+        i18nCentralStorage
+            .addNewMessagesToCentralStorage(newMessages, locale)
+            .then((result) => {
+
+                should(result.length).equal(newMessages.length);
+                i18nCentralStorage
+                    .addNewMessagesToCentralStorage(newMessages, locale)
+                    .catch((errors) => {
+
+                        should(errors.indexOf('version_conflict_engine_exception')).equal(1);
+                        done();
+                    });
+            });
+    });
+
+    it('syncLocale ru', (done) => {
+        const locale = 'ru';
+        const analizedMessages = i18nCentralStorage.analize('ru');
+
+        i18nCentralStorage
+            .addNewMessagesToCentralStorage(analizedMessages.newMessages, locale)
+            .then(() => {
+                i18nCentralStorage
+                    .syncLocale(analizedMessages, locale, {writeResultToFile: false})
+                    .then((result) => {
+
+                        should(Object.keys(result).length).equal(analizedMessages.foundMessages.length);
+                        should(result.site_description_constant).equal('site_description_constant');
+
+                        done();
+                    });
+            });
+
+
+    });
+
+
     it('fetchTranslationsFromCentralStorage ru', (done) => {
         const locale = 'ru';
         const messages = [
