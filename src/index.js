@@ -51,9 +51,7 @@ export default class I18nCentralStorage {
 
     syncLocale (analizedMessages, locale, options) {
         const {
-            foundMessages,
-            unusedMessages,
-            newMessages
+            foundMessages
         } = analizedMessages;
         const { writeResultToFile } = options;
 
@@ -69,7 +67,7 @@ export default class I18nCentralStorage {
                         }
 
                         const source = message._source;
-                        if (newMessages.indexOf(source.message) >= 0) {
+                        if (foundMessages.indexOf(source.message) >= 0) {
                             return null;
                         }
 
@@ -86,12 +84,18 @@ export default class I18nCentralStorage {
                         }
 
                         const source = message._source;
-                        return { [source.message]: source.translation};
+                        debug(' ** translatedMessages', message, source);
+
+                        return {
+                            message: source.message,
+                            translation: source.translation
+                        };
                     });
 
                     translatedMessages = translatedMessages.filter((m) => m);
 
                     debug('noneExistingMessagesInStore', noneExistingMessagesInStore);
+                    debug('translatedMessages', translatedMessages);
 
                     this.addNewMessagesToCentralStorage(noneExistingMessagesInStore, locale)
                         .then(() => {
@@ -99,12 +103,13 @@ export default class I18nCentralStorage {
                             const rusultingMessages = {};
 
                             foundMessages.forEach((key) => {
-                                rusultingMessages[key] = translatedMessages[key] || key;
+                                const message = translatedMessages.find((x) => x.message === key);
+                                rusultingMessages[key] = message && message.translation ? message.translation : key;
                             });
 
                             debug(' rusultingMessages ', rusultingMessages);
                             if (writeResultToFile) {
-                                setObjectToFile(messagesFile, JSON.stringify(rusultingMessages));
+                                setObjectToFile(messagesFile, JSON.stringify(rusultingMessages, null, 2));
                             }
                             resolve(rusultingMessages);
 

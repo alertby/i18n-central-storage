@@ -83,18 +83,27 @@ describe('Module API', () => {
         const locale = 'ru';
         const analizedMessages = i18nCentralStorage.analize('ru');
 
+        console.log('analizedMessages.newMessages[0]', analizedMessages.newMessages[0]);
+
         i18nCentralStorage
             .addNewMessagesToCentralStorage(analizedMessages.newMessages, locale)
             .then(() => {
                 i18nCentralStorage
-                    .syncLocale(analizedMessages, locale, {writeResultToFile: false})
-                    .then((result) => {
+                    .elasticCentralStorage
+                    .addMessageTranslation(analizedMessages.newMessages[0], 'this_is_translated_word', locale)
+                    .then(() => {
 
-                        should(Object.keys(result).length).equal(analizedMessages.foundMessages.length);
-                        should(result.site_description_constant).equal('site_description_constant');
+                    i18nCentralStorage
+                        .syncLocale(analizedMessages, locale, {writeResultToFile: false})
+                        .then((result) => {
 
-                        done();
+                            should(Object.keys(result).length).equal(analizedMessages.foundMessages.length);
+                            should(result.site_description_constant).equal('site_description_constant');
+                            should(result[analizedMessages.newMessages[0]]).equal('this_is_translated_word');
+
+                            done();
                     });
+                });
             });
 
 
