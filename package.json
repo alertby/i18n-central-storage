@@ -1,6 +1,6 @@
 {
   "name": "i18n-central-storage",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "parse files to find words that should be translated by pattern and put them to elasticsearch storage ",
   "main": "dist/index.js",
   "jsnext:main": "src/index.js",

@@ -7,6 +7,7 @@ const mappings = {
     'messages': {
         '_all': {'enabled': false },
         'properties': {
+            'project': {'type': 'text'},
             'message': {'type': 'text'},
             'translation': {'type': 'text'},
             'translatedAt': {'type': 'date'},
@@ -27,9 +28,12 @@ export default class ElasticCentralStorage {
             throw Error('ElasticCentralStorage index should be specified');
         }
 
-        this.config.mappings = config.mappings || mappings;
+        if (!config.project) {
+            config.project = 'default';
+        }
 
         this.config = config;
+        this.config.mappings = config.mappings || mappings;
 
         this.client = new es.Client({
           host: config.host
@@ -45,7 +49,9 @@ export default class ElasticCentralStorage {
               index: this.config.index
             }, (error, exists) => {
 
+                // @TODO update index by client.indices.putMapping([params, [callback]])
                 if (exists.status !== 404) {
+
                     return resolve(exists);
                 }
 
@@ -125,6 +131,7 @@ export default class ElasticCentralStorage {
                 refresh: true,
                 body: {
                     message,
+                    project: this.config.project,
                     translatedAt: null,
                     publishedAt: moment().format('YYYY-MM-DDTHH:mm:ss')
                 }
@@ -178,6 +185,26 @@ export default class ElasticCentralStorage {
                 body: {
                     docs
                 }
+            }, (error, response) => {
+
+                if (error) {
+                    reject(error);
+                }
+                resolve(response);
+            });
+        });
+
+        return promise;
+    }
+
+    deleteMessage (message, locale) {
+        const promise = new Promise((resolve, reject) => {
+            const hash = this.getHashesOfMessage(message);
+
+            this.client.delete({
+                index: this.config.index,
+                type: locale,
+                id: hash
             }, (error, response) => {
 
                 if (error) {

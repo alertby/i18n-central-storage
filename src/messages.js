@@ -28,3 +28,71 @@ export function getUnusedMessages(storedMessages, foundMessages) {
 }
 
 
+export function getNoneExistingMessagesInStore(response, foundMessages) {
+
+    let noneExistingMessagesInStore = response.docs.map((message, index) => {
+
+        if (!message.found) {
+            return foundMessages[index];
+        }
+
+        const source = message._source;
+        if (foundMessages.indexOf(source.message) >= 0) {
+            return null;
+        }
+
+        return source.message;
+    });
+
+    noneExistingMessagesInStore = noneExistingMessagesInStore.filter((m) => m);
+
+    return noneExistingMessagesInStore;
+}
+
+
+
+export function getExistingUnusedMessagesInStore(response, unusedMessages) {
+
+    let existingUnusedMessagesInStore = response.docs.map((message, index) => {
+
+        if (!message.found) {
+            return null;
+        }
+
+        const source = message._source;
+        if (unusedMessages.indexOf(source.message) < 0) {
+            return null;
+        }
+
+        return source.message;
+    });
+
+    existingUnusedMessagesInStore = existingUnusedMessagesInStore.filter((m) => m);
+
+    return existingUnusedMessagesInStore;
+}
+
+
+export function getTranslatedMessages(response) {
+
+
+    let translatedMessages = response.docs.map((message) => {
+
+        if (!message.found) {
+            return null;
+        }
+
+        const source = message._source;
+
+        return {
+            message: source.message,
+            translation: source.translation
+        };
+    });
+
+    translatedMessages = translatedMessages.filter((m) => m);
+
+    return translatedMessages;
+}
+
+

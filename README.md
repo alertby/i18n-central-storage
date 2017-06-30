@@ -1,6 +1,6 @@
 # i18n-central-storage
 
-## helps to agragate translations from several projects to one place(in our case elasticsearch only supported), so you can have you own i18-n or i18n-2 with followen configuration for example:
+helps to agragate translations from several projects to one place(in our case elasticsearch only supported), so you can have you own i18-n or i18n-2 with followen configuration for example:
 
 ```
 var locales = ['ru', 'en'];
