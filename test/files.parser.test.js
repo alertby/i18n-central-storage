@@ -13,7 +13,7 @@ describe('Files parser', () => {
 
         const files = findFilesInDirectory(directory, extentions);
 
-        files[1].should.equal(directory + '/react.component.view.js');
+        files[0].should.equal(directory + '/react.component.view.js');
 
     });
 
