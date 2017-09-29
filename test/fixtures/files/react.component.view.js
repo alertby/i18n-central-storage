@@ -3,7 +3,8 @@ import React, { Component } from 'react';
 import {debounce} from 'lodash';
 import {
   View,
-  TextInput
+  TextInput,
+  Text
 } from 'react-native';
 import SearchAutocompleteComponent from './SearchAutocompleteComponent';
 
@@ -43,12 +44,13 @@ export default class SearchInputComponent extends Component {
 
     return (
       <View style={styles.container}>
+        <Text>{gettext('Congratulations! You\'ve successfully registered your company. The information needs to be moderated before it\'s published on your company page. You will receive an email about the results of moderation shortly.')}</Text>
         <TextInput
           value={this.state.query}
           onChangeText={(text) => this.onChangeText(text)}
           onSubmitEditing={this.onSubmitEditing.bind(this)}
           returnKeyType="done"
-          placeholder={gettext('Type here to find sevice')}
+          placeholder={gettext('Type here to find service')}
           style={styles.textInput}
           accessibilityLabel="test-id-textfield"
         />
