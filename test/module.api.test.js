@@ -123,10 +123,12 @@ describe('Module API', () => {
         });
 
         const addTranslation = (message, callback) => {
+            const [key] = Object.keys(message);
+            const value = message[key];
 
             i18nCentralStorage
                 .elasticCentralStorage
-                .addMessageTranslation(Object.keys(message)[0], Object.values(message)[0], locale)
+                .addMessageTranslation(key, value, locale)
                 .then((response) => { callback(null, response); })
                 .catch((err) => { callback(err); });
         };
