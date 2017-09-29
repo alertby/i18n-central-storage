@@ -5,7 +5,7 @@ function matchedToAnyExtension(filename, filesExtentions) {
     let isMatched = false;
     filesExtentions.forEach((extention) => {
 
-        if (filename.search(extention) >= (filename.length - extention.length)) {
+        if (filename.lastIndexOf(extention) >= (filename.length - extention.length)) {
             isMatched = true;
         }
 
