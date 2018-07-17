@@ -15,6 +15,7 @@ describe('Module API', () => {
         const messagesDirectory = path.resolve(__dirname, 'fixtures/messages/');
         const extentions = ['.js', '.ejs'];
         const pattern = /gettext\('(.*?)'\)/gi;
+        const pluralPattern = /gettextP\('(.*?)', *'(.*?)', *(\d+)\)/gi;
 
         const elasticConfig = {
             host: '192.168.1.237:9200',
@@ -26,6 +27,7 @@ describe('Module API', () => {
             messagesDirectory,
             extentions,
             pattern,
+            pluralPattern,
             elasticConfig
         }, done);
     });
@@ -37,19 +39,35 @@ describe('Module API', () => {
 
     it('analize en locale', () => {
         const { newMessages } = i18nCentralStorage.analize('en');
-        should(newMessages[0]).equal('test label');
+        should(newMessages[0]).eql({
+            key: '%s site title',
+            value: {
+                one: '%s site title',
+                other: '%s site titles'
+            }
+        });
+        should(newMessages[1]).equal('test label');
     });
 
     it('analize ru locale', () => {
         const { newMessages } = i18nCentralStorage.analize('ru');
-        should(newMessages[0]).equal('test label');
+        should(newMessages[0]).eql({
+            key: '%s site title',
+            value: {
+                one: '%s site title',
+                few: '%s site titles',
+                many: '%s site titles',
+                other: '%s site titles'
+            }
+        });
+        should(newMessages[1]).equal('test label');
     });
 
 
     it('addNewMessagesToCentralStorage ru', (done) => {
         const locale = 'ru';
         const { newMessages } = i18nCentralStorage.analize(locale);
-        should(newMessages[0]).equal('test label');
+        should(newMessages[1]).equal('test label');
 
         i18nCentralStorage
             .addNewMessagesToCentralStorage(newMessages, locale)
@@ -82,31 +100,35 @@ describe('Module API', () => {
     it('syncLocale ru', (done) => {
         const locale = 'ru';
         const analizedMessages = i18nCentralStorage.analize('ru');
-
-        console.log('analizedMessages.newMessages[0]', analizedMessages.newMessages[0]);
+        const pluralTranslation = {key: '%s site titles', value: {
+          one: '%s заголовок сайта',
+          few: '%s заголовка сайта',
+          many: '%s заголовков сайта',
+          other: '%s заголовков сайта'
+        }};
+        console.log('analizedMessages.newMessages[0]', analizedMessages);
 
         i18nCentralStorage
             .addNewMessagesToCentralStorage(analizedMessages.newMessages, locale)
-            .then(() => {
-                i18nCentralStorage
-                    .elasticCentralStorage
-                    .addMessageTranslation(analizedMessages.newMessages[0], 'this_is_translated_word', locale)
-                    .then(() => {
+            .then(() => i18nCentralStorage
+                .elasticCentralStorage
+                .addMessageTranslation(analizedMessages.newMessages[0], pluralTranslation, locale)
+            )
+            .then(() => i18nCentralStorage
+                .elasticCentralStorage
+                .addMessageTranslation(analizedMessages.newMessages[1], 'this_is_translated_word', locale)
+            )
+            .then(() => i18nCentralStorage
+                .syncLocale(analizedMessages, locale, {writeResultToFile: false})
+            )
+            .then((result) => {
+                should(Object.keys(result).length).equal(analizedMessages.foundMessages.length);
+                should(result.site_description_constant).equal('site_description_constant');
+                should(result[analizedMessages.newMessages[0].key]).eql(pluralTranslation.value);
+                should(result[analizedMessages.newMessages[1]]).equal('this_is_translated_word');
 
-                    i18nCentralStorage
-                        .syncLocale(analizedMessages, locale, {writeResultToFile: false})
-                        .then((result) => {
-
-                            should(Object.keys(result).length).equal(analizedMessages.foundMessages.length);
-                            should(result.site_description_constant).equal('site_description_constant');
-                            should(result[analizedMessages.newMessages[0]]).equal('this_is_translated_word');
-
-                            done();
-                    });
-                });
-            });
-
-
+                done();
+            })
     });
 
 

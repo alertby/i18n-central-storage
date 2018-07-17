@@ -1,15 +1,19 @@
-import {findFilesInDirectory, searchTextInFileByPattern, getObjectFromFile, setObjectToFile} from './files.parser';
+import {findFilesInDirectory, searchTextInFileByPatterns, getObjectFromFile, setObjectToFile} from './files.parser';
 import ElasticCentralStorage from './central.storage.elastic';
 import {
     getNewMessages,
     getUnusedMessages,
     getNoneExistingMessagesInStore,
     getTranslatedMessages,
-    getExistingUnusedMessagesInStore
+    getExistingUnusedMessagesInStore,
+    getMessageKey,
+    getMessageValue
 } from './messages';
 import path from 'path';
 import createDebug from 'debug';
 import async from 'async';
+import { unionWith, isEqual } from 'lodash';
+import pluralCategories from 'make-plural/umd/pluralCategories';
 
 const debug = createDebug('i18-central-storage');
 
@@ -35,9 +39,11 @@ export default class I18nCentralStorage {
         this.validateConfig(config);
 
         this.directories = config.directories;
+        this.extension = config.extension || '.js';
         this.messagesDirectory = config.messagesDirectory;
         this.extentions = config.extentions || ['.js', '.jsx', '.ejs', '.html'];
         this.pattern = config.pattern;
+        this.pluralPattern = config.pluralPattern;
 
         this.elasticCentralStorage = new ElasticCentralStorage(config.elasticConfig);
         this.elasticCentralStorage.createIndexForCentralStorage()
@@ -45,10 +51,12 @@ export default class I18nCentralStorage {
     }
 
     analize (locale) {
-        const messagesFile = path.resolve(this.messagesDirectory, locale + '.js');
+        const messagesFile = path.resolve(this.messagesDirectory, `${locale}${this.extension}`);
         const previousMessages = getObjectFromFile(messagesFile);
         let filesList = [];
         let foundMessages = [];
+
+        this.setPluralCategoriesForLocale(locale);
 
         this.directories.forEach((directory) => {
             const foundFiles = findFilesInDirectory(directory, this.extentions);
@@ -58,8 +66,8 @@ export default class I18nCentralStorage {
         debug('filesList', filesList);
 
         filesList.forEach((filePath) => {
-            const messages = searchTextInFileByPattern(filePath, this.pattern);
-            foundMessages = foundMessages.concat(messages);
+            const messages = searchTextInFileByPatterns(filePath, this);
+            foundMessages = unionWith(foundMessages, messages, isEqual);
         }, this);
 
         const newMessages = getNewMessages(previousMessages, foundMessages);
@@ -93,23 +101,23 @@ export default class I18nCentralStorage {
 
                     this.addNewMessagesToCentralStorage(noneExistingMessagesInStore, locale)
                         .then(() => {
-                            const messagesFile = path.resolve(this.messagesDirectory, locale + '.js');
-                            const rusultingMessages = {};
+                            const messagesFile = path.resolve(this.messagesDirectory, `${locale}${this.extension}`);
+                            const resultingMessages = {};
 
-                            foundMessages.forEach((key) => {
-                                const message = translatedMessages.find((x) => x.message === key);
-                                rusultingMessages[key] = message && message.translation ? message.translation : key;
+                            foundMessages.forEach((foundMessage) => {
+                                const message = translatedMessages.find((x) => isEqual(x.message, foundMessage));
+                                resultingMessages[getMessageKey(foundMessage)] = message && message.translation ? getMessageValue(message.translation) : getMessageValue(foundMessage);
                             });
 
-                            debug(' rusultingMessages ', rusultingMessages);
+                            debug(' resultingMessages ', resultingMessages);
                             if (writeResultToFile) {
-                                setObjectToFile(messagesFile, JSON.stringify(rusultingMessages, null, 2));
+                                setObjectToFile(messagesFile, JSON.stringify(resultingMessages, null, 2));
                             }
 
                             this.deleteOldMessagesFromCentralStorage(existingUnusedMessagesInStore, locale)
                                 .then(() => {
 
-                                    resolve(rusultingMessages);
+                                    resolve(resultingMessages);
                                 })
                                 .catch((error) => {
                                     reject(error);
@@ -191,6 +199,10 @@ export default class I18nCentralStorage {
         });
 
         return promise;
+    }
+
+    setPluralCategoriesForLocale(locale) {
+      this.pluralCategories = pluralCategories[locale].cardinal;
     }
 
 }

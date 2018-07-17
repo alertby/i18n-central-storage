@@ -1,6 +1,8 @@
 import es from 'elasticsearch';
 import crypto from 'crypto';
 import moment from 'moment';
+import { isPlainObject } from 'lodash';
+import { getMessageKey } from './messages';
 
 
 const mappings = {
@@ -91,8 +93,9 @@ export default class ElasticCentralStorage {
     }
 
     getHashesOfMessage (message) {
+        const messageKey = getMessageKey(message);
         const hash = crypto.createHmac('sha256', this.config.index)
-            .update(message)
+            .update(messageKey)
             .digest('hex');
 
         return hash;
@@ -123,18 +126,20 @@ export default class ElasticCentralStorage {
 
         const promise = new Promise((resolve, reject) => {
             const hash = this.getHashesOfMessage(message);
+            const body = {
+                project: this.config.project,
+                translatedAt: null,
+                publishedAt: moment().format('YYYY-MM-DDTHH:mm:ss')
+            };
+
+            isPlainObject(message) ? body.messageP = message : body.message = message;
 
             return this.client.create({
                 index: this.config.index,
                 type: locale,
                 id: hash,
                 refresh: true,
-                body: {
-                    message,
-                    project: this.config.project,
-                    translatedAt: null,
-                    publishedAt: moment().format('YYYY-MM-DDTHH:mm:ss')
-                }
+                body
             }, (error, response) => {
                 if (error) {
 
@@ -153,17 +158,18 @@ export default class ElasticCentralStorage {
         const promise = new Promise((resolve, reject) => {
             const hash = this.getHashesOfMessage(message);
 
+            const doc = {
+                translatedAt: moment().format('YYYY-MM-DDTHH:mm:ss')
+            };
+
+            isPlainObject(translatedMessage) ? doc.translationP = translatedMessage : doc.translation = translatedMessage;
+
             return this.client.update({
                 index: this.config.index,
                 type: locale,
                 id: hash,
                 refresh: true,
-                body: {
-                    doc: {
-                        translation: translatedMessage,
-                        translatedAt: moment().format('YYYY-MM-DDTHH:mm:ss')
-                    }
-                }
+                body: { doc }
             }, (error, response) => {
 
                 if (error) {

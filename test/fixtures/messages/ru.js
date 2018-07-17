@@ -5,5 +5,11 @@
     "Email address": "Email address",
     "Password": "Password",
     "Remember me": "Remember me",
-    "Sign in": "Войти"
+    "Sign in": "Войти",
+    "%s cat": {
+        "one": "%d кошка",
+        "few": "%d кошки",
+        "many": "%d кошек",
+        "other": "%d кошка"
+    }
 }
