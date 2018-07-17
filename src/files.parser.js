@@ -13,6 +13,9 @@ function matchedToAnyExtension(filename, filesExtentions) {
     return isMatched;
 }
 
+function unescapeString(string) {
+  return string.replace(/\\(.)/g, '$1');
+}
 
 export function findFilesInDirectory(baseDirectoryPath, filesExtentions) {
 
@@ -54,7 +57,7 @@ export function searchTextInFileByPattern(filePath, pattern) {
         const regExp = new RegExp(pattern);
         const text = regExp.exec(matchedText);
 
-        return text[1];
+        return unescapeString(text[1]);
     });
     return texts;
 }

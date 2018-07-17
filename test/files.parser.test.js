@@ -23,7 +23,8 @@ describe('Files parser', () => {
         const foundStrings = searchTextInFileByPattern(filePath, regexp);
 
         foundStrings[0].should.equal('test label');
-        foundStrings[1].should.equal('Type here to find sevice');
+        foundStrings[1].should.equal('Congratulations! You\'ve successfully registered your company. The information needs to be moderated before it\'s published on your company page. You will receive an email about the results of moderation shortly.');
+        foundStrings[2].should.equal('Type here to find service');
     });
 
     it('getObjectFromFile', () => {
