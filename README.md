@@ -4,8 +4,7 @@ helps to agragate translations from several projects to one place(in our case el
 
 # ![result](media/kibana_translations.png)
 
-
-You can have you own i18-n or i18n-2 with followen configuration for example:
+You can have your own i18-n or i18n-2 with followen configuration for example:
 
 ```js
 var locales = ['ru', 'en'];
@@ -17,14 +16,16 @@ var i18nConfig = {
 var i18n = new (require('i18n-2'))(i18nConfig);
 ```
 
-and you have your source files with messages that should be translated, so you can specify pattern for that:
+and you have your source files with messages that should be translated, so you can specify patterns for singular and plural:
 
 ```js
-// match any string in you code with gettext('any text')
+// match any string in your code with gettext('any text')
 var pattern = /gettext\('(.*?)'\)/gi;
+// match any string in your code with gettextP('singular', 'plural', count)
+var pluralPattern = /gettextP\('(.*?)', *'(.*?)', *(\d+)\)/gi;
 ```
 
-and directories where you source code located:
+and directories where your source code located:
 
 ```js
 var directories = [
@@ -39,7 +40,25 @@ and extentions(array of strings) that should be included in search:
 var extentions = ['.js', '.ejs', '.jsx'];
 ```
 
-as result all you translated messages will be fetched from elasticsearch and placed to you localization file.
+list of other configuration options:
+```js
+// setting extension of messages files - defaults to '.js'
+extension: '.js',
+
+// where to store files - required parameter
+messagesDirectory: './mylocales',
+
+// here you should specify host and port of your elasticsearch instance,
+// index wich you are going to use and project reference to split several projects by
+// that property
+var elasticConfig = {
+    host: '192.168.1.237:9200',
+    index: 'localizations',
+    project: 'projectReferenceOne'
+};
+```
+
+as result all you translated messages will be fetched from elasticsearch and placed to your localization file.
 
 
 usage example as a gulp task for one locale:
@@ -57,9 +76,6 @@ var messagesDirectory = path.resolve(__dirname, '../messages/');
 var extentions = ['.js', '.ejs', '.jsx'];
 var pattern = /gettext\('(.*?)'\)/gi;
 
-// here you should specify host and port of your elasticsearch instance,
-// index wich you are going to use and prokect reference to split several projects by
-// that property
 var elasticConfig = {
     host: '192.168.1.237:9200',
     index: 'localizations',
