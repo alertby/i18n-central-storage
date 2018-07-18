@@ -1,9 +1,26 @@
+import { isPlainObject, differenceWith, isEqual, some } from 'lodash';
 
+export function getMessageKey(message) {
+    if (isPlainObject(message)) {
+        return message.key;
+    }
+
+    return message;
+}
+
+export function getMessageValue(message) {
+    if (isPlainObject(message)) {
+        return message.value;
+    }
+
+    return message;
+}
 
 export function getNewMessages(storedMessages, foundMessages) {
     const newMessages = [];
     foundMessages.forEach((message) => {
-        if (storedMessages[message]) { return; }
+        const messageKey = getMessageKey(message);
+        if (storedMessages[messageKey]) { return; }
 
         newMessages.push(message);
     });
@@ -16,8 +33,10 @@ export function getUnusedMessages(storedMessages, foundMessages) {
 
     if (!storedMessages) { return []; }
 
+    const foundMessagesKeys = foundMessages.map((message) => getMessageKey(message));
+
     let unusedMessages = Object.keys(storedMessages).map((message) => {
-        if (foundMessages.indexOf(message) >= 0) { return null; }
+        if (foundMessagesKeys.indexOf(message) >= 0) { return null; }
 
         return message;
     });
@@ -37,7 +56,8 @@ export function getNoneExistingMessagesInStore(response, foundMessages) {
         }
 
         const source = message._source;
-        if (foundMessages.indexOf(source.message) >= 0) {
+        const isMessageInStore = some(foundMessages, (foundMessage) => isEqual(foundMessage, source.message));
+        if (isMessageInStore) {
             return null;
         }
 
@@ -60,7 +80,8 @@ export function getExistingUnusedMessagesInStore(response, unusedMessages) {
         }
 
         const source = message._source;
-        if (unusedMessages.indexOf(source.message) < 0) {
+        const messageKey = getMessageKey(source.message);
+        if (unusedMessages.indexOf(messageKey) < 0) {
             return null;
         }
 
@@ -79,14 +100,15 @@ export function getTranslatedMessages(response) {
     let translatedMessages = response.docs.map((message) => {
 
         if (!message.found) {
-            return null;
+          return null;
         }
 
         const source = message._source;
+        const isPlural = source.messageP;
 
         return {
-            message: source.message,
-            translation: source.translation
+            message: isPlural ? source.messageP: source.message,
+            translation: isPlural ? source.translationP : source.translation
         };
     });
 

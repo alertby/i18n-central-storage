@@ -40,6 +40,8 @@
   "dependencies": {
     "async": "^2.4.1",
     "elasticsearch": "*",
+    "lodash": "^4.17.10",
+    "make-plural": "^4.2.0",
     "moment": "^2.18.1"
   }
 }

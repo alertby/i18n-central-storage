@@ -5,5 +5,9 @@
     "Email address": "Email address",
     "Password": "Password",
     "Remember me": "Remember me",
-    "Sign in": "Sign in"
+    "Sign in": "Sign in",
+    "%s cat": {
+        "one": "%s cat",
+        "other": "%s cats"
+    }
 }
