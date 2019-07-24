@@ -7,7 +7,7 @@ describe('ElasticCentralStorage', () => {
 
     let elasticCentralStorage = null;
     const config = {
-        host: '192.168.1.237:9200',
+        host: '192.168.1.243:31809',
         index: 'i18n-central-storage-test'
     };
 
@@ -17,6 +17,7 @@ describe('ElasticCentralStorage', () => {
 
         elasticCentralStorage.createIndexForCentralStorage()
             .then(() => { done(); });
+
 
     });
 
@@ -33,9 +34,9 @@ describe('ElasticCentralStorage', () => {
 
         elasticCentralStorage
             .addMessage(message, locale)
-            .then((result) => {
+            .then((response) => {
 
-                should(result.created).is.exactly(true);
+                should(response.result).is.exactly('created');
                 done();
             });
     });

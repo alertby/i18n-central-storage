@@ -1,6 +1,6 @@
 {
   "name": "i18n-central-storage",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "parse files to find words that should be translated by pattern and put them to elasticsearch storage ",
   "main": "dist/index.js",
   "jsnext:main": "src/index.js",
@@ -8,7 +8,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "./node_modules/mocha/bin/mocha --require babel-register",
+    "test": "./node_modules/mocha/bin/mocha --require babel-register --timeout 5000",
     "prepublish": "node_modules/babel-cli/bin/babel.js src --out-dir dist"
   },
   "babel": {
@@ -33,15 +33,15 @@
     "babel-preset-es2015": "^6.24.1",
     "babel-preset-es2016": "^6.24.1",
     "babel-register": "^6.24.1",
-    "debug": "^2.6.8",
-    "mocha": "*",
+    "debug": "^2.6.9",
+    "mocha": "^6.2.0",
     "should": "*"
   },
   "dependencies": {
     "async": "^2.4.1",
-    "elasticsearch": "*",
-    "lodash": "^4.17.10",
+    "elasticsearch": "^16.3.0",
+    "lodash": "^4.17.15",
     "make-plural": "^4.2.0",
-    "moment": "^2.18.1"
+    "moment": "^2.24.0"
   }
 }

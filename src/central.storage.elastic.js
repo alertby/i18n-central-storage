@@ -11,6 +11,7 @@ const mappings = {
         'properties': {
             'project': {'type': 'text'},
             'message': {'type': 'text'},
+            'locale': {'type': 'text'},
             'translation': {'type': 'text'},
             'translatedAt': {'type': 'date'},
             'publishedAt': {'type': 'date'}
@@ -38,8 +39,9 @@ export default class ElasticCentralStorage {
         this.config.mappings = config.mappings || mappings;
 
         this.client = new es.Client({
-          host: config.host
-          // log: 'trace'
+          host: config.host,
+          apiVersion: config.apiVersion || '6.8',
+          log: config.log || ''
         });
 
     }
@@ -101,12 +103,12 @@ export default class ElasticCentralStorage {
         return hash;
     }
 
-    getDoc (message, locale) {
+    getDoc (message) {
         const hash = this.getHashesOfMessage(message);
 
         const doc = {
             _index: this.config.index,
-            _type: locale,
+            _type: Object.keys(this.config.mappings)[0],
             _id: hash
         };
         return doc;
@@ -129,6 +131,7 @@ export default class ElasticCentralStorage {
             const body = {
                 project: this.config.project,
                 translatedAt: null,
+                locale,
                 publishedAt: moment().format('YYYY-MM-DDTHH:mm:ss')
             };
 
@@ -136,8 +139,8 @@ export default class ElasticCentralStorage {
 
             return this.client.create({
                 index: this.config.index,
-                type: locale,
                 id: hash,
+                type: Object.keys(this.config.mappings)[0],
                 refresh: true,
                 body
             }, (error, response) => {
@@ -159,6 +162,7 @@ export default class ElasticCentralStorage {
             const hash = this.getHashesOfMessage(message);
 
             const doc = {
+                locale,
                 translatedAt: moment().format('YYYY-MM-DDTHH:mm:ss')
             };
 
@@ -166,7 +170,7 @@ export default class ElasticCentralStorage {
 
             return this.client.update({
                 index: this.config.index,
-                type: locale,
+                type: Object.keys(this.config.mappings)[0],
                 id: hash,
                 refresh: true,
                 body: { doc }
@@ -209,7 +213,7 @@ export default class ElasticCentralStorage {
 
             this.client.delete({
                 index: this.config.index,
-                type: locale,
+                type: 'doc',
                 id: hash
             }, (error, response) => {
 

@@ -18,7 +18,7 @@ describe('Module API', () => {
         const pluralPattern = /gettextP\('(.*?)', *'(.*?)', *(\d+)\)/gi;
 
         const elasticConfig = {
-            host: '192.168.1.237:9200',
+            host: '192.168.1.243:31809',
             index: 'i18n-central-storage-test'
         };
 
