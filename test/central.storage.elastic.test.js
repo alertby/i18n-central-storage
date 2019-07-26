@@ -44,23 +44,16 @@ describe('ElasticCentralStorage', () => {
 
     it('fetchMessages', (done) => {
 
-        const messages = [
-            'test message 1',
-            'test message 2'
-        ];
-        const locale = 'ru';
-
-
         elasticCentralStorage.client.ping({
                 requestTimeout: 30000
         }, (error) => {
             should.not.exist(error);
 
             elasticCentralStorage
-                .fetchMessages(messages, locale)
+                .fetchMessages()
                 .then((result) => {
 
-                    should(result.docs[0].found).is.exactly(true);
+                    should(result.docs[0]._source.message).is.exactly('test message 1');
                     done();
                 });
         });

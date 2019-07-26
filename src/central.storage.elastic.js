@@ -94,40 +94,20 @@ export default class ElasticCentralStorage {
         return promise;
     }
 
-    getHashesOfMessage (message) {
+    getHashesOfMessage (message, locale) {
         const messageKey = getMessageKey(message);
         const hash = crypto.createHmac('sha256', this.config.index)
             .update(messageKey)
             .digest('hex');
 
-        return hash;
+        return hash + locale;
     }
 
-    getDoc (message) {
-        const hash = this.getHashesOfMessage(message);
-
-        const doc = {
-            _index: this.config.index,
-            _type: Object.keys(this.config.mappings)[0],
-            _id: hash
-        };
-        return doc;
-    }
-
-    getDocsWithHashesOfMessages (messages, locale) {
-        const docs = messages.map((message) => {
-            const doc = this.getDoc(message, locale);
-
-            return doc;
-        });
-
-        return docs;
-    }
 
     addMessage (message, locale) {
 
         const promise = new Promise((resolve, reject) => {
-            const hash = this.getHashesOfMessage(message);
+            const hash = this.getHashesOfMessage(message, locale);
             const body = {
                 project: this.config.project,
                 translatedAt: null,
@@ -159,7 +139,7 @@ export default class ElasticCentralStorage {
     addMessageTranslation (message, translatedMessage, locale) {
 
         const promise = new Promise((resolve, reject) => {
-            const hash = this.getHashesOfMessage(message);
+            const hash = this.getHashesOfMessage(message, locale);
 
             const doc = {
                 locale,
@@ -187,20 +167,28 @@ export default class ElasticCentralStorage {
     }
 
 
-    fetchMessages (messages, locale) {
+    fetchMessages () {
         const promise = new Promise((resolve, reject) => {
-            const docs = this.getDocsWithHashesOfMessages(messages, locale);
-
-            this.client.mget({
-                body: {
-                    docs
-                }
+            this.client.msearch({
+                body: [{
+                    index: this.config.index,
+                    type: Object.keys(this.config.mappings)[0],
+                }, {
+                    query: {
+                        term: {
+                            project: this.config.project
+                        }
+                    }
+                }]
             }, (error, response) => {
 
                 if (error) {
                     reject(error);
                 }
-                resolve(response);
+
+                resolve({
+                    docs: response.responses[0].hits.hits
+                });
             });
         });
 
@@ -209,7 +197,7 @@ export default class ElasticCentralStorage {
 
     deleteMessage (message, locale) {
         const promise = new Promise((resolve, reject) => {
-            const hash = this.getHashesOfMessage(message);
+            const hash = this.getHashesOfMessage(message, locale);
 
             this.client.delete({
                 index: this.config.index,

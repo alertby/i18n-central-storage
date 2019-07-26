@@ -3,9 +3,8 @@ import ElasticCentralStorage from './central.storage.elastic';
 import {
     getNewMessages,
     getUnusedMessages,
-    getNoneExistingMessagesInStore,
+    findInStoreResponseNoneExistingMessages,
     getTranslatedMessages,
-    getExistingUnusedMessagesInStore,
     getMessageKey,
     getMessageValue
 } from './messages';
@@ -89,15 +88,24 @@ export default class I18nCentralStorage {
 
 
         const promise = new Promise((resolve, reject) => {
-            this.fetchTranslationsFromCentralStorage(foundMessages, locale)
+            this.fetchTranslationsFromCentralStorage(locale)
                 .then((response) => {
 
-                    const noneExistingMessagesInStore = getNoneExistingMessagesInStore(response, foundMessages);
-                    const translatedMessages = getTranslatedMessages(response);
-                    const existingUnusedMessagesInStore = getExistingUnusedMessagesInStore(response, unusedMessages);
+                    const noneExistingMessagesInStore = findInStoreResponseNoneExistingMessages(response, foundMessages);
+                    const translatedMessages = getTranslatedMessages(response, locale);
 
                     debug('noneExistingMessagesInStore', noneExistingMessagesInStore);
                     debug('translatedMessages', translatedMessages);
+
+                    if(!noneExistingMessagesInStore) {
+                        this.deleteOldMessagesFromCentralStorage(unusedMessages, locale)
+                            .then(() => {
+                                resolve(resultingMessages);
+                            })
+                            .catch((error) => {
+                                reject(error);
+                            });
+                    }
 
                     this.addNewMessagesToCentralStorage(noneExistingMessagesInStore, locale)
                         .then(() => {
@@ -114,9 +122,12 @@ export default class I18nCentralStorage {
                                 setObjectToFile(messagesFile, JSON.stringify(resultingMessages, null, 2));
                             }
 
-                            this.deleteOldMessagesFromCentralStorage(existingUnusedMessagesInStore, locale)
-                                .then(() => {
+                            if (!unusedMessages) {
+                                resolve(resultingMessages);
+                            }
 
+                            this.deleteOldMessagesFromCentralStorage(unusedMessages, locale)
+                                .then(() => {
                                     resolve(resultingMessages);
                                 })
                                 .catch((error) => {
@@ -137,13 +148,17 @@ export default class I18nCentralStorage {
 
     }
 
-    fetchTranslationsFromCentralStorage (messages, locale) {
+    fetchTranslationsFromCentralStorage (locale) {
 
         const promise = new Promise((resolve, reject) => {
 
-            this.elasticCentralStorage.fetchMessages(messages, locale)
+            this.elasticCentralStorage.fetchMessages()
                 .then((response) => {
-
+                    if (locale) {
+                        response.docs = response.docs.filter((data) => {
+                            return data._source.locale === locale;
+                        });
+                    }
                     debug('  fetchTranslationsFromCentralStorage result ', response);
                     resolve(response);
                 })
@@ -156,7 +171,6 @@ export default class I18nCentralStorage {
     }
 
     addNewMessagesToCentralStorage (messages, locale) {
-
         const add = (message, callback) => {
             debug('add ', message);
             this.elasticCentralStorage.addMessage(message, locale)
@@ -178,7 +192,7 @@ export default class I18nCentralStorage {
         return promise;
     }
 
-    deleteOldMessagesFromCentralStorage (messages, locale) {
+    deleteOldMessagesFromCentralStorage (unusedMessages, locale) {
 
         const deleteMessage = (message, callback) => {
             debug('deleteMessage ', message);
@@ -187,18 +201,30 @@ export default class I18nCentralStorage {
                 .catch((err) => { callback(err); });
         };
 
-        const promise = new Promise((resolve, reject) => {
-            async.map(messages, deleteMessage, (error, result) => {
-                debug('  deleteOldMessagesFromCentralStorage result ', error, result);
-                if (error) {
-                    return reject(error);
-                }
-                return resolve(result);
+        return this.fetchTranslationsFromCentralStorage(unusedMessages)
+            .then((responseWithExistingMessages) => {
+
+                let messagesToDelete = responseWithExistingMessages.docs.map((message) => {
+                    if (!message.found) {
+                        return null;
+                    }
+                    return message._source.message;
+                });
+                messagesToDelete = messagesToDelete.filter((m) => m);
+
+                const promise = new Promise((resolve, reject) => {
+                    async.map(messagesToDelete, deleteMessage, (error, result) => {
+                        debug('  deleteOldMessagesFromCentralStorage result ', error, result);
+                        if (error) {
+                            return reject(error);
+                        }
+                        return resolve(result);
+                    });
+
+                });
+
+                return promise;
             });
-
-        });
-
-        return promise;
     }
 
     setPluralCategoriesForLocale(locale) {
