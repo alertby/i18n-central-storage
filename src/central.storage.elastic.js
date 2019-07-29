@@ -6,7 +6,7 @@ import { getMessageKey } from './messages';
 
 
 const mappings = {
-    'messages': {
+    'doc': {
         '_all': {'enabled': false },
         'properties': {
             'project': {'type': 'text'},
@@ -61,6 +61,7 @@ export default class ElasticCentralStorage {
 
                 return this.client.indices.create({
                     index: this.config.index,
+
                     body: {
                         mappings: this.config.mappings
                     }
@@ -120,7 +121,7 @@ export default class ElasticCentralStorage {
             return this.client.create({
                 index: this.config.index,
                 id: hash,
-                type: Object.keys(this.config.mappings)[0],
+                type: 'doc',
                 refresh: true,
                 body
             }, (error, response) => {
@@ -150,7 +151,7 @@ export default class ElasticCentralStorage {
 
             return this.client.update({
                 index: this.config.index,
-                type: Object.keys(this.config.mappings)[0],
+                type: 'doc',
                 id: hash,
                 refresh: true,
                 body: { doc }
@@ -169,17 +170,20 @@ export default class ElasticCentralStorage {
 
     fetchMessages () {
         const promise = new Promise((resolve, reject) => {
-            this.client.msearch({
-                body: [{
-                    index: this.config.index,
-                    type: Object.keys(this.config.mappings)[0],
-                }, {
+            // @todo fetch all results if TotalHits more then 10000
+            this.client.search({
+                index: this.config.index,
+                type: 'doc',
+                body: {
+                    size: 10000,
                     query: {
-                        term: {
-                            project: this.config.project
+                        match: {
+                            project: {
+                                query: this.config.project
+                            }
                         }
                     }
-                }]
+                }
             }, (error, response) => {
 
                 if (error) {
@@ -187,7 +191,7 @@ export default class ElasticCentralStorage {
                 }
 
                 resolve({
-                    docs: response.responses[0].hits.hits
+                    docs: response.hits.hits
                 });
             });
         });

@@ -115,3 +115,23 @@ var taskFunction = function() {
 module.exports = taskFunction;
 
 ```
+
+# migration to version 2.*
+```$xslt
+POST _reindex
+{
+  "source": {
+    "index": "localizations"
+  },
+  "dest": {
+    "index": "localizations.v2"
+  },
+  "script": {
+    "source": """
+    ctx._id = ctx._type + "-" + ctx._id;
+    ctx._source.locale = ctx._type;
+    ctx._type = "doc";
+"""
+  }
+}
+```
