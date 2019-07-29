@@ -9,7 +9,7 @@
   },
   "scripts": {
     "test": "./node_modules/mocha/bin/mocha --require babel-register --timeout 5000",
-    "prepublish": "node_modules/babel-cli/bin/babel.js src --out-dir dist"
+    "prepare": "node_modules/babel-cli/bin/babel.js src --out-dir dist"
   },
   "babel": {
     "presets": [
@@ -28,8 +28,8 @@
   },
   "homepage": "https://github.com/alertby/i18n-central-storage#readme",
   "devDependencies": {
-    "babel-cli": "^6.24.1",
-    "babel-core": "^6.25.0",
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.0",
     "babel-preset-es2015": "^6.24.1",
     "babel-preset-es2016": "^6.24.1",
     "babel-register": "^6.24.1",
