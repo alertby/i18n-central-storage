@@ -1,4 +1,4 @@
-import { isPlainObject, differenceWith, isEqual, some } from 'lodash';
+import { isPlainObject, isEqual, some } from 'lodash';
 
 export function getMessageKey(message) {
     if (isPlainObject(message)) {
@@ -47,16 +47,15 @@ export function getUnusedMessages(storedMessages, foundMessages) {
 }
 
 
-export function getNoneExistingMessagesInStore(response, foundMessages) {
+export function findInStoreResponseNoneExistingMessages(response, foundMessages) {
+    if (!response.docs) {
+        return [];
+    }
 
-    let noneExistingMessagesInStore = response.docs.map((message, index) => {
-
-        if (!message.found) {
-            return foundMessages[index];
-        }
+    let noneExistingMessagesInStore = response.docs.map((message) => {
 
         const source = message._source;
-        const isMessageInStore = some(foundMessages, (foundMessage) => isEqual(foundMessage, source.message));
+        const isMessageInStore = foundMessages.indexOf(getMessageKey(source.message));
         if (isMessageInStore) {
             return null;
         }
@@ -70,40 +69,16 @@ export function getNoneExistingMessagesInStore(response, foundMessages) {
 }
 
 
-
-export function getExistingUnusedMessagesInStore(response, unusedMessages) {
-
-    let existingUnusedMessagesInStore = response.docs.map((message, index) => {
-
-        if (!message.found) {
-            return null;
-        }
-
-        const source = message._source;
-        const messageKey = getMessageKey(source.message);
-        if (unusedMessages.indexOf(messageKey) < 0) {
-            return null;
-        }
-
-        return source.message;
-    });
-
-    existingUnusedMessagesInStore = existingUnusedMessagesInStore.filter((m) => m);
-
-    return existingUnusedMessagesInStore;
-}
-
-
-export function getTranslatedMessages(response) {
+export function getTranslatedMessages(response, locale) {
 
 
     let translatedMessages = response.docs.map((message) => {
+        const source = message._source;
 
-        if (!message.found) {
-          return null;
+        if (source.locale !== locale) {
+            return null;
         }
 
-        const source = message._source;
         const isPlural = source.messageP;
 
         return {

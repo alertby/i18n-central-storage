@@ -7,7 +7,7 @@ describe('ElasticCentralStorage', () => {
 
     let elasticCentralStorage = null;
     const config = {
-        host: '192.168.1.237:9200',
+        host: '192.168.1.243:31809',
         index: 'i18n-central-storage-test'
     };
 
@@ -17,6 +17,7 @@ describe('ElasticCentralStorage', () => {
 
         elasticCentralStorage.createIndexForCentralStorage()
             .then(() => { done(); });
+
 
     });
 
@@ -33,9 +34,9 @@ describe('ElasticCentralStorage', () => {
 
         elasticCentralStorage
             .addMessage(message, locale)
-            .then((result) => {
+            .then((response) => {
 
-                should(result.created).is.exactly(true);
+                should(response.result).is.exactly('created');
                 done();
             });
     });
@@ -43,23 +44,16 @@ describe('ElasticCentralStorage', () => {
 
     it('fetchMessages', (done) => {
 
-        const messages = [
-            'test message 1',
-            'test message 2'
-        ];
-        const locale = 'ru';
-
-
         elasticCentralStorage.client.ping({
                 requestTimeout: 30000
         }, (error) => {
             should.not.exist(error);
 
             elasticCentralStorage
-                .fetchMessages(messages, locale)
+                .fetchMessages()
                 .then((result) => {
 
-                    should(result.docs[0].found).is.exactly(true);
+                    should(result.docs[0]._source.message).is.exactly('test message 1');
                     done();
                 });
         });

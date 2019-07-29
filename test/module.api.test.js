@@ -3,6 +3,8 @@ import I18nCentralStorage from '../src/index';
 import should from 'should';
 import path from 'path';
 import async from 'async';
+import { differenceWith, isEqual } from 'lodash';
+
 
 
 describe('Module API', () => {
@@ -18,7 +20,7 @@ describe('Module API', () => {
         const pluralPattern = /gettextP\('(.*?)', *'(.*?)', *(\d+)\)/gi;
 
         const elasticConfig = {
-            host: '192.168.1.237:9200',
+            host: '192.168.1.243:31809',
             index: 'i18n-central-storage-test'
         };
 
@@ -72,7 +74,6 @@ describe('Module API', () => {
         i18nCentralStorage
             .addNewMessagesToCentralStorage(newMessages, locale)
             .then((result) => {
-
                 should(result.length).equal(newMessages.length);
                 done();
             });
@@ -135,8 +136,8 @@ describe('Module API', () => {
     it('fetchTranslationsFromCentralStorage ru', (done) => {
         const locale = 'ru';
         const messages = [
-            {'test messagae 1': 'тестовое сообщение 1'},
-            {'another one %s with template': 'другое %s с шаблоном'}
+            {'test messagae 1': 'test msg'},
+            {'another one %s with template': 'one more %s'}
         ];
 
         const messagesKeys = messages.map((message) => {
@@ -155,7 +156,6 @@ describe('Module API', () => {
                 .catch((err) => { callback(err); });
         };
 
-
         i18nCentralStorage
             .addNewMessagesToCentralStorage(messagesKeys, locale)
             .then((result) => {
@@ -167,7 +167,7 @@ describe('Module API', () => {
                     should(error).null();
 
                     i18nCentralStorage
-                        .fetchTranslationsFromCentralStorage(messagesKeys, locale)
+                        .fetchTranslationsFromCentralStorage(locale)
                         .then((response) => {
 
                             const messagesArray = response.docs.map((message) => {
@@ -176,7 +176,56 @@ describe('Module API', () => {
                                 return { [source.message]: source.translation};
                             });
 
-                            should(messages).deepEqual(messagesArray);
+                            should(differenceWith(messages, messagesArray, isEqual).length).equal(0);
+                        });
+                });
+
+            });
+
+
+
+        const messagesSV = [
+            {'test messagae 1': 'тестовое сообщение 1'},
+            {'another one %s with template': 'другое %s с шаблоном'}
+        ];
+
+        const messagesKeysSV = messagesSV.map((message) => {
+            const key = Object.keys(message);
+            return key[0];
+        });
+
+        const addTranslationSV = (message, callback) => {
+            const [key] = Object.keys(message);
+            const value = message[key];
+
+            i18nCentralStorage
+                .elasticCentralStorage
+                .addMessageTranslation(key, value, 'sv')
+                .then((response) => { callback(null, response); })
+                .catch((err) => { callback(err); });
+        };
+
+        i18nCentralStorage
+            .addNewMessagesToCentralStorage(messagesKeysSV, 'sv')
+            .then((result) => {
+
+                should(result.length).equal(messages.length);
+
+                async.map(messages, addTranslationSV, (error) => {
+
+                    should(error).null();
+
+                    i18nCentralStorage
+                        .fetchTranslationsFromCentralStorage(locale)
+                        .then((response) => {
+
+                            const messagesArray = response.docs.map((message) => {
+
+                                const source = message._source;
+                                return { [source.message]: source.translation};
+                            });
+
+                            should(differenceWith(messages, messagesArray, isEqual).length).equal(0);
                             done();
                         });
                 });
