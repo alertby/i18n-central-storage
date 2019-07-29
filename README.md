@@ -117,6 +117,10 @@ module.exports = taskFunction;
 ```
 
 # migration to version 2.*
+since we should use only one _type for future versions of elastic (from 7.*) we should gave only documents with single type, see:
+https://www.elastic.co/blog/index-type-parent-child-join-now-future-in-elasticsearch
+
+execute in kibana following:
 ```$xslt
 POST _reindex
 {
@@ -132,6 +136,17 @@ POST _reindex
     ctx._source.locale = ctx._type;
     ctx._type = "doc";
 """
+  }
+}
+
+POST localizations.v2/doc/_delete_by_query
+{
+  "query": {
+    "match": {
+      "locale": {
+        "query": "messages"
+      }
+    }
   }
 }
 ```

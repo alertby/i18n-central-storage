@@ -97,16 +97,6 @@ export default class I18nCentralStorage {
                     debug('noneExistingMessagesInStore', noneExistingMessagesInStore);
                     debug('translatedMessages', translatedMessages);
 
-                    if(!noneExistingMessagesInStore) {
-                        this.deleteOldMessagesFromCentralStorage(unusedMessages, locale)
-                            .then(() => {
-                                resolve(resultingMessages);
-                            })
-                            .catch((error) => {
-                                reject(error);
-                            });
-                    }
-
                     this.addNewMessagesToCentralStorage(noneExistingMessagesInStore, locale)
                         .then(() => {
                             const messagesFile = path.resolve(this.messagesDirectory, `${locale}${this.extension}`);
@@ -122,11 +112,7 @@ export default class I18nCentralStorage {
                                 setObjectToFile(messagesFile, JSON.stringify(resultingMessages, null, 2));
                             }
 
-                            if (!unusedMessages) {
-                                resolve(resultingMessages);
-                            }
-
-                            this.deleteOldMessagesFromCentralStorage(unusedMessages, locale)
+                            this.deleteOldMessagesFromCentralStorage(foundMessages)
                                 .then(() => {
                                     resolve(resultingMessages);
                                 })
@@ -192,23 +178,23 @@ export default class I18nCentralStorage {
         return promise;
     }
 
-    deleteOldMessagesFromCentralStorage (unusedMessages, locale) {
+    deleteOldMessagesFromCentralStorage (foundMessages) {
 
-        const deleteMessage = (message, callback) => {
-            debug('deleteMessage ', message);
-            this.elasticCentralStorage.deleteMessage(message, locale)
+        const deleteMessage = (id, callback) => {
+            debug('deleteMessage id', id);
+            this.elasticCentralStorage.deleteMessage(id)
                 .then((response) => { callback(null, response); })
                 .catch((err) => { callback(err); });
         };
 
-        return this.fetchTranslationsFromCentralStorage(unusedMessages)
+        return this.fetchTranslationsFromCentralStorage()
             .then((responseWithExistingMessages) => {
 
                 let messagesToDelete = responseWithExistingMessages.docs.map((message) => {
-                    if (!message.found) {
+                    if (foundMessages.indexOf(getMessageKey(message._source.message)) >= 0) {
                         return null;
                     }
-                    return message._source.message;
+                    return message._id;
                 });
                 messagesToDelete = messagesToDelete.filter((m) => m);
 

@@ -199,14 +199,12 @@ export default class ElasticCentralStorage {
         return promise;
     }
 
-    deleteMessage (message, locale) {
+    deleteMessage (id) {
         const promise = new Promise((resolve, reject) => {
-            const hash = this.getHashesOfMessage(message, locale);
-
             this.client.delete({
                 index: this.config.index,
                 type: 'doc',
-                id: hash
+                id
             }, (error, response) => {
 
                 if (error) {
