@@ -52,16 +52,10 @@ export function findInStoreResponseNoneExistingMessages(response, foundMessages)
         return [];
     }
 
-    let noneExistingMessagesInStore = response.docs.map((message) => {
-
-        const source = message._source;
-        const isMessageInStore = foundMessages.indexOf(getMessageKey(source.message));
-        if (isMessageInStore) {
-            return null;
-        }
-
-        return source.message;
-    });
+    const messagesInStore = response.docs
+      .map(data => getMessageKey(data._source.message || data._source.messageP));
+    let noneExistingMessagesInStore = foundMessages
+      .map((message) => messagesInStore.indexOf(getMessageKey(message)) !== -1 ? null : message);
 
     noneExistingMessagesInStore = noneExistingMessagesInStore.filter((m) => m);
 
