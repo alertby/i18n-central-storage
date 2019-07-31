@@ -183,7 +183,7 @@ describe('Module API', () => {
             });
 
 
-
+        const localeSV = 'sv';
         const messagesSV = [
             {'test messagae 1': 'тестовое сообщение 1'},
             {'another one %s with template': 'другое %s с шаблоном'}
@@ -200,23 +200,23 @@ describe('Module API', () => {
 
             i18nCentralStorage
                 .elasticCentralStorage
-                .addMessageTranslation(key, value, 'sv')
+                .addMessageTranslation(key, value, localeSV)
                 .then((response) => { callback(null, response); })
                 .catch((err) => { callback(err); });
         };
 
         i18nCentralStorage
-            .addNewMessagesToCentralStorage(messagesKeysSV, 'sv')
+            .addNewMessagesToCentralStorage(messagesKeysSV, localeSV)
             .then((result) => {
 
-                should(result.length).equal(messages.length);
+                should(result.length).equal(messagesSV.length);
 
-                async.map(messages, addTranslationSV, (error) => {
+                async.map(messagesSV, addTranslationSV, (error) => {
 
                     should(error).null();
 
                     i18nCentralStorage
-                        .fetchTranslationsFromCentralStorage(locale)
+                        .fetchTranslationsFromCentralStorage(localeSV)
                         .then((response) => {
 
                             const messagesArray = response.docs.map((message) => {
@@ -225,7 +225,7 @@ describe('Module API', () => {
                                 return { [source.message]: source.translation};
                             });
 
-                            should(differenceWith(messages, messagesArray, isEqual).length).equal(0);
+                            should(differenceWith(messagesSV, messagesArray, isEqual).length).equal(0);
                             done();
                         });
                 });

@@ -101,7 +101,7 @@ export default class ElasticCentralStorage {
             .update(messageKey)
             .digest('hex');
 
-        return hash + locale;
+        return `${hash}${locale}-${this.config.project}`;
     }
 
 
