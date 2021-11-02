@@ -177,7 +177,7 @@ export default class ElasticCentralStorage {
                 body: {
                     size: 10000,
                     query: {
-                        match: {
+                        match_phrase: {
                             project: {
                                 query: this.config.project
                             }
