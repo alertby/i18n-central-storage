@@ -7,7 +7,7 @@ describe('ElasticCentralStorage', () => {
 
     let elasticCentralStorage = null;
     const config = {
-        host: '192.168.1.243:31809',
+        host: '192.168.252.10:30704',
         index: 'i18n-central-storage-test'
     };
 
