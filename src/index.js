@@ -1,4 +1,4 @@
-import {findFilesInDirectory, searchTextInFileByPatterns, getObjectFromFile, setObjectToFile} from './files.parser';
+import { findFilesInDirectory, searchTextInFileByPatterns, getObjectFromFile, setObjectToFile } from './files.parser';
 import ElasticCentralStorage from './central.storage.elastic';
 import {
     getNewMessages,
@@ -40,7 +40,7 @@ export default class I18nCentralStorage {
         this.directories = config.directories;
         this.extension = config.extension || '.js';
         this.messagesDirectory = config.messagesDirectory;
-        this.extentions = config.extentions || ['.js', '.jsx', '.ejs', '.html'];
+        this.extensions = config.extensions || ['.js', '.jsx', '.ejs', '.html'];
         this.pattern = config.pattern;
         this.pluralPattern = config.pluralPattern;
 
@@ -49,7 +49,7 @@ export default class I18nCentralStorage {
             .then(() => { cb(); });
     }
 
-    analize (locale) {
+    analize(locale) {
         const messagesFile = path.resolve(this.messagesDirectory, `${locale}${this.extension}`);
         const previousMessages = getObjectFromFile(messagesFile);
         let filesList = [];
@@ -58,7 +58,7 @@ export default class I18nCentralStorage {
         this.setPluralCategoriesForLocale(locale);
 
         this.directories.forEach((directory) => {
-            const foundFiles = findFilesInDirectory(directory, this.extentions);
+            const foundFiles = findFilesInDirectory(directory, this.extensions);
             filesList = filesList.concat(foundFiles);
         }, this);
 
@@ -79,10 +79,9 @@ export default class I18nCentralStorage {
         };
     }
 
-    syncLocale (analizedMessages, locale, options) {
+    syncLocale(analizedMessages, locale, options) {
         const {
-            foundMessages,
-            unusedMessages
+            foundMessages
         } = analizedMessages;
         const { writeResultToFile } = options;
 
@@ -104,7 +103,9 @@ export default class I18nCentralStorage {
 
                             foundMessages.forEach((foundMessage) => {
                                 const message = translatedMessages.find((x) => isEqual(x.message, foundMessage));
-                                resultingMessages[getMessageKey(foundMessage)] = message && message.translation ? getMessageValue(message.translation) : getMessageValue(foundMessage);
+                                resultingMessages[getMessageKey(foundMessage)] = message && message.translation
+                                    ? getMessageValue(message.translation)
+                                    : getMessageValue(foundMessage);
                             });
 
                             debug(' resultingMessages ', resultingMessages);
@@ -134,16 +135,14 @@ export default class I18nCentralStorage {
 
     }
 
-    fetchTranslationsFromCentralStorage (locale) {
+    fetchTranslationsFromCentralStorage(locale) {
 
         const promise = new Promise((resolve, reject) => {
 
             this.elasticCentralStorage.fetchMessages()
                 .then((response) => {
                     if (locale) {
-                        response.docs = response.docs.filter((data) => {
-                            return data._source.locale === locale;
-                        });
+                        response.docs = response.docs.filter((data) => data._source.locale === locale);
                     }
                     debug('  fetchTranslationsFromCentralStorage result ', response);
                     resolve(response);
@@ -156,7 +155,7 @@ export default class I18nCentralStorage {
         return promise;
     }
 
-    addNewMessagesToCentralStorage (messages, locale) {
+    addNewMessagesToCentralStorage(messages, locale) {
         const add = (message, callback) => {
             debug('add ', message);
             this.elasticCentralStorage.addMessage(message, locale)
@@ -178,7 +177,7 @@ export default class I18nCentralStorage {
         return promise;
     }
 
-    deleteOldMessagesFromCentralStorage (foundMessages) {
+    deleteOldMessagesFromCentralStorage(foundMessages) {
 
         const deleteMessage = (id, callback) => {
             debug('deleteMessage id', id);
@@ -214,7 +213,7 @@ export default class I18nCentralStorage {
     }
 
     setPluralCategoriesForLocale(locale) {
-      this.pluralCategories = pluralCategories[locale].cardinal;
+        this.pluralCategories = pluralCategories[locale].cardinal;
     }
 
 }

@@ -1,7 +1,6 @@
 /* global describe, it, before, after */
-import ElasticCentralStorage from '../src/central.storage.elastic';
 import should from 'should';
-
+import ElasticCentralStorage from '../src/central.storage.elastic';
 
 describe('ElasticCentralStorage', () => {
 
@@ -10,7 +9,6 @@ describe('ElasticCentralStorage', () => {
         host: '192.168.252.10:30704',
         index: 'i18n-central-storage-test'
     };
-
 
     before((done) => {
         elasticCentralStorage = new ElasticCentralStorage(config);
@@ -22,7 +20,6 @@ describe('ElasticCentralStorage', () => {
     });
 
     after((done) => {
-
         elasticCentralStorage.deleteIndexForCentralStorage()
             .then(() => { done(); });
 
@@ -42,22 +39,18 @@ describe('ElasticCentralStorage', () => {
     });
 
 
-    it('fetchMessages', (done) => {
+    it('fetchMessages', async () => {
 
-        elasticCentralStorage.client.ping({
-                requestTimeout: 30000
-        }, (error) => {
-            should.not.exist(error);
+        const pingResult = await elasticCentralStorage.client.ping();
 
-            elasticCentralStorage
-                .fetchMessages()
-                .then((result) => {
+        pingResult.should.be.true();
 
-                    should(result.docs[0]._source.message).is.exactly('test message 1');
-                    done();
-                });
-        });
+        elasticCentralStorage
+            .fetchMessages()
+            .then((result) => {
 
+                should(result.docs[0]._source.message).is.exactly('test message 1');
+            });
     });
 });
 

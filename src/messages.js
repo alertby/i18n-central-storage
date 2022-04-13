@@ -1,4 +1,4 @@
-import { isPlainObject, isEqual, some } from 'lodash';
+import { isPlainObject } from 'lodash';
 
 export function getMessageKey(message) {
     if (isPlainObject(message)) {
@@ -53,9 +53,11 @@ export function findInStoreResponseNoneExistingMessages(response, foundMessages)
     }
 
     const messagesInStore = response.docs
-      .map(data => getMessageKey(data._source.message || data._source.messageP));
+        .map((data) => getMessageKey(data._source.message || data._source.messageP));
     let noneExistingMessagesInStore = foundMessages
-      .map((message) => messagesInStore.indexOf(getMessageKey(message)) !== -1 ? null : message);
+        .map((message) => (messagesInStore.indexOf(getMessageKey(message)) !== -1
+            ? null
+            : message));
 
     noneExistingMessagesInStore = noneExistingMessagesInStore.filter((m) => m);
 
@@ -64,8 +66,6 @@ export function findInStoreResponseNoneExistingMessages(response, foundMessages)
 
 
 export function getTranslatedMessages(response, locale) {
-
-
     let translatedMessages = response.docs.map((message) => {
         const source = message._source;
 
@@ -76,8 +76,12 @@ export function getTranslatedMessages(response, locale) {
         const isPlural = source.messageP;
 
         return {
-            message: isPlural ? source.messageP: source.message,
-            translation: isPlural ? source.translationP : source.translation
+            message: isPlural
+                ? source.messageP
+                : source.message,
+            translation: isPlural
+                ? source.translationP
+                : source.translation
         };
     });
 

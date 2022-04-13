@@ -1,22 +1,20 @@
 module.exports = {
-    "env": {
-        "browser": true,
-        "es6": true
+    env: {
+        browser: true,
+        es2021: true
     },
-    "extends": ["eslint:recommended", "plugin:react-native/all"],
-    "parserOptions": {
-        "ecmaFeatures": {
-            "experimentalObjectRestSpread": true,
-            "jsx": true
+    extends: "eslint:recommended",
+    plugins: ["@babel"],
+    parser: "@babel/eslint-parser",
+    parserOptions: {
+        ecmaVersion: "latest",
+        sourceType: "module",
+        requireConfigFile: false,
+        babelOptions: {
+            babelrc: true
         },
-        "sourceType": "module"
     },
-    "plugins": [
-        "react",
-        "react-native"
-    ],
     "rules": {
-    	"react/jsx-uses-vars": [2],
         "accessor-pairs": "error",
         "array-bracket-spacing": "error",
         "array-callback-return": "error",
@@ -27,7 +25,7 @@ module.exports = {
         "block-spacing": "error",
         "brace-style": "off",
         "callback-return": "error",
-        "camelcase": "error",
+        "camelcase": "off",
         "capitalized-comments": [
             "error",
             "never"
@@ -63,12 +61,8 @@ module.exports = {
         "id-blacklist": "error",
         "id-length": "off",
         "id-match": "error",
-        "indent": "off",
+        "indent": ["error", 4],
         "init-declarations": "error",
-        "jsx-quotes": [
-            "error",
-            "prefer-double"
-        ],
         "key-spacing": "error",
         "keyword-spacing": [
             "error",
@@ -89,9 +83,9 @@ module.exports = {
         "max-lines": "error",
         "max-nested-callbacks": "error",
         "max-params": ["error", 4],
-        "max-statements": "error",
+        "max-statements": "off",
         "max-statements-per-line": "off",
-        "multiline-ternary": ["error", "never"],
+        "multiline-ternary": ["error", "always"],
         "new-cap": "error",
         "new-parens": "error",
         "newline-after-var": "off",
@@ -136,8 +130,8 @@ module.exports = {
         "no-multi-str": "error",
         "no-multiple-empty-lines": "error",
         "no-native-reassign": "error",
-        "no-negated-condition": "error",
-        "no-negated-in-lhs": "error",
+        "no-negated-condition": "off",
+        "no-negated-in-lhs": "off",
         "no-nested-ternary": "error",
         "no-new": "error",
         "no-new-func": "error",
@@ -176,7 +170,7 @@ module.exports = {
         "no-underscore-dangle": "off",
         "no-unmodified-loop-condition": "error",
         "no-unneeded-ternary": "error",
-        "no-unused-expressions": "error",
+        "no-unused-expressions": "off",
         "no-use-before-define": "error",
         "no-useless-call": "error",
         "no-useless-computed-key": "error",
@@ -192,7 +186,7 @@ module.exports = {
         "no-with": "error",
         "nonblock-statement-body-position": "error",
         "object-curly-spacing": "off",
-        "object-property-newline": "error",
+        "object-property-newline": "off",
         "object-shorthand": "error",
         "one-var": "off",
         "one-var-declaration-per-line": "error",
@@ -240,4 +234,4 @@ module.exports = {
         "yield-star-spacing": "error",
         "yoda": "error"
     }
-};
+}
