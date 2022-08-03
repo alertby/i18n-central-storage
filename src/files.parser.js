@@ -1,11 +1,11 @@
 import { join, dirname } from 'path';
 import { existsSync, readdirSync, lstatSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
 
-function matchedToAnyExtension(filename, filesExtentions) {
+function matchedToAnyExtension(filename, filesExtensions) {
     let isMatched = false;
-    filesExtentions.forEach((extention) => {
+    filesExtensions.forEach((extension) => {
 
-        if (filename.lastIndexOf(extention) >= (filename.length - extention.length)) {
+        if (filename.lastIndexOf(extension) >= (filename.length - extension.length)) {
             isMatched = true;
         }
 
@@ -14,10 +14,10 @@ function matchedToAnyExtension(filename, filesExtentions) {
 }
 
 function unescapeString(string) {
-  return string.replace(/\\(.)/g, '$1');
+    return string.replace(/\\(.)/g, '$1');
 }
 
-export function findFilesInDirectory(baseDirectoryPath, filesExtentions) {
+export function findFilesInDirectory(baseDirectoryPath, filesExtensions) {
 
     let files = [];
     let filesNames = [];
@@ -35,22 +35,14 @@ export function findFilesInDirectory(baseDirectoryPath, filesExtentions) {
 
         if (stat.isDirectory()) {
 
-            filesNames = filesNames.concat(findFilesInDirectory(filename, filesExtentions));
-        } else if (matchedToAnyExtension(filename, filesExtentions)) {
+            filesNames = filesNames.concat(findFilesInDirectory(filename, filesExtensions));
+        } else if (matchedToAnyExtension(filename, filesExtensions)) {
 
             filesNames.push(filename);
         }
     }, this);
 
     return filesNames;
-}
-
-export function searchTextInFileByPatterns(filePath, {pattern, pluralPattern, pluralCategories}) {
-    const contents = readFileSync(filePath, 'utf8');
-    const singularTexts = searchTextInFileByPattern(contents, pattern);
-    const pluralTexts = searchTextInFileByPluralPattern(contents, pluralPattern, pluralCategories);
-
-    return [...singularTexts, ...pluralTexts];
 }
 
 export function searchTextInFileByPattern(contents, pattern) {
@@ -85,26 +77,24 @@ export function searchTextInFileByPluralPattern(contents, pattern, pluralCategor
         return {
             key: singular,
             value: pluralCategories.reduce((result, category) => {
-                category === 'one' ? result[category] = singular : result[category] = plural;
+                category === 'one'
+                    ? result[category] = singular
+                    : result[category] = plural;
                 return result;
             }, {})
-        }
+        };
     });
     return texts;
 }
 
-export function getObjectFromFile(filePath) {
-    createFile(filePath);
-    const content = readFileSync(filePath, 'utf8');
+export function searchTextInFileByPatterns(filePath, { pattern, pluralPattern, pluralCategories }) {
+    const contents = readFileSync(filePath, 'utf8');
+    const singularTexts = searchTextInFileByPattern(contents, pattern);
+    const pluralTexts = searchTextInFileByPluralPattern(contents, pluralPattern, pluralCategories);
 
-    return JSON.parse(content);
+    return [...singularTexts, ...pluralTexts];
 }
 
-
-export function setObjectToFile(filePath, data) {
-    createFile(filePath);
-    writeFileSync(filePath, data, 'utf8');
-}
 
 function createFile(filePath) {
     const directoryName = dirname(filePath);
@@ -116,6 +106,18 @@ function createFile(filePath) {
     if (!existsSync(filePath)) {
         writeFileSync(filePath, JSON.stringify({}), 'utf8');
     }
+}
+
+export function getObjectFromFile(filePath) {
+    createFile(filePath);
+    const content = readFileSync(filePath, 'utf8');
+
+    return JSON.parse(content);
+}
+
+export function setObjectToFile(filePath, data) {
+    createFile(filePath);
+    writeFileSync(filePath, data, 'utf8');
 }
 
 

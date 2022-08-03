@@ -5,8 +5,6 @@ import path from 'path';
 import async from 'async';
 import { differenceWith, isEqual } from 'lodash';
 
-
-
 describe('Module API', () => {
 
     let i18nCentralStorage = null;
@@ -15,7 +13,7 @@ describe('Module API', () => {
 
         const directories = [path.resolve(__dirname, 'fixtures/files')];
         const messagesDirectory = path.resolve(__dirname, 'fixtures/messages/');
-        const extentions = ['.js', '.ejs'];
+        const extensions = ['.js', '.ejs'];
         const pattern = /gettext\('(.*?)'\)/gi;
         const pluralPattern = /gettextP\('(.*?)', *'(.*?)', *(\d+)\)/gi;
 
@@ -25,12 +23,7 @@ describe('Module API', () => {
         };
 
         i18nCentralStorage = new I18nCentralStorage({
-            directories,
-            messagesDirectory,
-            extentions,
-            pattern,
-            pluralPattern,
-            elasticConfig
+            directories, messagesDirectory, extensions, pattern, pluralPattern, elasticConfig
         }, done);
     });
 
@@ -42,10 +35,8 @@ describe('Module API', () => {
     it('analize en locale', () => {
         const { newMessages } = i18nCentralStorage.analize('en');
         should(newMessages[0]).eql({
-            key: '%s site title',
-            value: {
-                one: '%s site title',
-                other: '%s site titles'
+            key: '%s site title', value: {
+                one: '%s site title', other: '%s site titles'
             }
         });
         should(newMessages[1]).equal('test label');
@@ -54,12 +45,8 @@ describe('Module API', () => {
     it('analize ru locale', () => {
         const { newMessages } = i18nCentralStorage.analize('ru');
         should(newMessages[0]).eql({
-            key: '%s site title',
-            value: {
-                one: '%s site title',
-                few: '%s site titles',
-                many: '%s site titles',
-                other: '%s site titles'
+            key: '%s site title', value: {
+                one: '%s site title', few: '%s site titles', many: '%s site titles', other: '%s site titles'
             }
         });
         should(newMessages[1]).equal('test label');
@@ -92,7 +79,7 @@ describe('Module API', () => {
                     .addNewMessagesToCentralStorage(newMessages, locale)
                     .catch((errors) => {
 
-                        should(errors.indexOf('version_conflict_engine_exception')).equal(1);
+                        errors.should.match(/version conflict, document already exists/);
                         done();
                     });
             });
@@ -101,27 +88,26 @@ describe('Module API', () => {
     it('syncLocale ru', (done) => {
         const locale = 'ru';
         const analizedMessages = i18nCentralStorage.analize('ru');
-        const pluralTranslation = {key: '%s site titles', value: {
-          one: '%s заголовок сайта',
-          few: '%s заголовка сайта',
-          many: '%s заголовков сайта',
-          other: '%s заголовков сайта'
-        }};
+        const pluralTranslation = {
+            key: '%s site titles', value: {
+                one: '%s заголовок сайта',
+                few: '%s заголовка сайта',
+                many: '%s заголовков сайта',
+                other: '%s заголовков сайта'
+            }
+        };
         console.log('analizedMessages.newMessages[0]', analizedMessages);
 
         i18nCentralStorage
             .addNewMessagesToCentralStorage(analizedMessages.newMessages, locale)
             .then(() => i18nCentralStorage
                 .elasticCentralStorage
-                .addMessageTranslation(analizedMessages.newMessages[0], pluralTranslation, locale)
-            )
+                .addMessageTranslation(analizedMessages.newMessages[0], pluralTranslation, locale))
             .then(() => i18nCentralStorage
                 .elasticCentralStorage
-                .addMessageTranslation(analizedMessages.newMessages[1], 'this_is_translated_word', locale)
-            )
+                .addMessageTranslation(analizedMessages.newMessages[1], 'this_is_translated_word', locale))
             .then(() => i18nCentralStorage
-                .syncLocale(analizedMessages, locale, {writeResultToFile: false})
-            )
+                .syncLocale(analizedMessages, locale, { writeResultToFile: false }))
             .then((result) => {
                 should(Object.keys(result).length).equal(analizedMessages.foundMessages.length);
                 should(result.site_description_constant).equal('site_description_constant');
@@ -129,16 +115,13 @@ describe('Module API', () => {
                 should(result[analizedMessages.newMessages[1]]).equal('this_is_translated_word');
 
                 done();
-            })
+            });
     });
 
 
     it('fetchTranslationsFromCentralStorage ru', (done) => {
         const locale = 'ru';
-        const messages = [
-            {'test messagae 1': 'test msg'},
-            {'another one %s with template': 'one more %s'}
-        ];
+        const messages = [{ 'test messagae 1': 'test msg' }, { 'another one %s with template': 'one more %s' }];
 
         const messagesKeys = messages.map((message) => {
             const key = Object.keys(message);
@@ -173,7 +156,7 @@ describe('Module API', () => {
                             const messagesArray = response.docs.map((message) => {
 
                                 const source = message._source;
-                                return { [source.message]: source.translation};
+                                return { [source.message]: source.translation };
                             });
 
                             should(differenceWith(messages, messagesArray, isEqual).length).equal(0);
@@ -184,10 +167,7 @@ describe('Module API', () => {
 
 
         const localeSV = 'sv';
-        const messagesSV = [
-            {'test messagae 1': 'тестовое сообщение 1'},
-            {'another one %s with template': 'другое %s с шаблоном'}
-        ];
+        const messagesSV = [{ 'test messagae 1': 'тестовое сообщение 1' }, { 'another one %s with template': 'другое %s с шаблоном' }];
 
         const messagesKeysSV = messagesSV.map((message) => {
             const key = Object.keys(message);
@@ -222,7 +202,7 @@ describe('Module API', () => {
                             const messagesArray = response.docs.map((message) => {
 
                                 const source = message._source;
-                                return { [source.message]: source.translation};
+                                return { [source.message]: source.translation };
                             });
 
                             should(differenceWith(messagesSV, messagesArray, isEqual).length).equal(0);

@@ -1,5 +1,5 @@
 /* global describe, it */
-import {getNewMessages, getUnusedMessages} from './../src/messages';
+import { getNewMessages, getUnusedMessages } from './../src/messages';
 import should from 'should';
 
 

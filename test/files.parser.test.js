@@ -1,8 +1,7 @@
 /* global __dirname, describe, it */
-import {findFilesInDirectory, searchTextInFileByPatterns, getObjectFromFile} from './../src/files.parser';
+import { findFilesInDirectory, getObjectFromFile, searchTextInFileByPatterns } from './../src/files.parser';
 import { resolve } from 'path';
 import { existsSync, unlinkSync } from 'fs';
-import should from 'should';
 
 
 describe('Files parser', () => {
@@ -10,12 +9,11 @@ describe('Files parser', () => {
 
     it('findFilesInDirectory', () => {
         const directory = resolve(__dirname, 'fixtures/files');
-        const extentions = ['.js'];
+        const extensions = ['.js'];
 
-        const files = findFilesInDirectory(directory, extentions);
+        const files = findFilesInDirectory(directory, extensions);
 
         files[0].should.equal(directory + '/react.component.view.js');
-
     });
 
     it('searchTextInFileByPatterns', () => {
@@ -24,9 +22,14 @@ describe('Files parser', () => {
         const pluralCategories = ['one', 'few', 'many', 'other'];
 
         const filePath = resolve(__dirname, 'fixtures/files/react.component.view.js');
-        const foundStrings = searchTextInFileByPatterns(filePath, {pattern, pluralPattern, pluralCategories});
+        const foundStrings = searchTextInFileByPatterns(filePath, {
+            pattern,
+            pluralPattern,
+            pluralCategories
+        });
 
         foundStrings[0].should.equal('test label');
+        // eslint-disable-next-line max-len
         foundStrings[1].should.equal('Congratulations! You\'ve successfully registered your company. The information needs to be moderated before it\'s published on your company page. You will receive an email about the results of moderation shortly.');
         foundStrings[2].should.equal('Type here to find service');
     });
@@ -36,7 +39,12 @@ describe('Files parser', () => {
         const data = getObjectFromFile(filePath);
 
         data['Email address'].should.equal('Email address');
-        data['%s cat'].should.eql({one: "%d кошка", few: "%d кошки", many: "%d кошек", other: "%d кошка"});
+        data['%s cat'].should.eql({
+            one: "%d кошка",
+            few: "%d кошки",
+            many: "%d кошек",
+            other: "%d кошка"
+        });
     });
 
 
