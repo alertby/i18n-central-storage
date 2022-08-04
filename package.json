@@ -1,6 +1,6 @@
 {
   "name": "i18n-central-storage",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "parse files to find words that should be translated by pattern and put them to elasticsearch storage ",
   "main": "dist/index.js",
   "jsnext:main": "src/index.js",
@@ -38,7 +38,6 @@
   "dependencies": {
     "@elastic/elasticsearch": "^8.2.1",
     "async": "^3.2.2",
-    "elasticsearch": "^16.3.0",
     "lodash": "^4.17.21",
     "make-plural": "^4.2.0",
     "moment": "^2.29.4"
